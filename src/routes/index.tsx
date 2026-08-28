@@ -1,24 +1,79 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { ArrowRight, ListChecks, NotebookPen, Flame } from "lucide-react";
+import lion from "@/assets/lion.png";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
 export const Route = createFileRoute("/")({
-  component: Index,
+  head: () => ({
+    meta: [
+      { title: "LEGEND — Trading Discipline for Elite Forex Traders" },
+      {
+        name: "description",
+        content:
+          "A private discipline platform for serious forex traders: daily routine checklists, SMC trade journaling, streaks and consistency analytics.",
+      },
+      { property: "og:title", content: "LEGEND — Trading Discipline for Elite Forex Traders" },
+      {
+        property: "og:description",
+        content: "Daily routine checklists, SMC trade journaling and consistency analytics for disciplined traders.",
+      },
+    ],
+  }),
+  component: Landing,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
-function Index() {
+function Landing() {
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
+    <div className="hero-vignette grain relative min-h-screen overflow-hidden">
+      <header className="relative z-10 mx-auto flex w-full max-w-6xl items-center justify-between px-5 py-6">
+        <span className="font-display text-sm tracking-[0.4em]">LEGEND</span>
+        <Link
+          to="/dashboard"
+          className="rounded-full border border-border px-4 py-2 text-xs uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:border-gold/50 hover:text-gold"
+        >
+          Enter
+        </Link>
+      </header>
+
+      <section className="relative z-10 mx-auto flex min-h-[calc(100vh-88px)] w-full max-w-3xl flex-col items-center justify-center px-5 pb-20 text-center">
+        <img
+          src={lion}
+          alt="LEGEND lion crest"
+          width={1024}
+          height={1024}
+          className="h-44 w-44 object-contain drop-shadow-[0_0_60px_rgba(201,168,92,0.18)] sm:h-56 sm:w-56"
+        />
+        <p className="mt-6 text-[11px] uppercase tracking-[0.42em] text-gold/80">Private members' desk</p>
+        <h1 className="mt-5 font-display text-4xl leading-[1.1] sm:text-6xl">
+          Discipline is the <span className="text-gradient-gold">edge</span>. Everything else is noise.
+        </h1>
+        <p className="mt-6 max-w-xl text-sm leading-relaxed text-muted-foreground sm:text-base">
+          Funded traders are not smarter. They repeat the same process on every session, log every decision, and refuse
+          to break their own rules. LEGEND holds you to that standard, daily.
+        </p>
+        <div className="mt-9 flex w-full flex-col items-center gap-3 sm:w-auto sm:flex-row">
+          <Link
+            to="/dashboard"
+            className="bg-gold-gradient glow-gold inline-flex w-full items-center justify-center gap-2 rounded-full px-7 py-3.5 text-sm font-semibold text-primary-foreground transition-transform hover:scale-[1.02] sm:w-auto"
+          >
+            Start today's routine
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+
+        <div className="mt-16 grid w-full gap-3 sm:grid-cols-3">
+          {[
+            { icon: ListChecks, title: "Daily routine", body: "A non-negotiable checklist before, during and after the session." },
+            { icon: NotebookPen, title: "SMC journal", body: "Liquidity, order blocks, FVG — logged with screenshots and emotion." },
+            { icon: Flame, title: "Streaks", body: "Consecutive disciplined days, tracked without mercy." },
+          ].map(({ icon: Icon, title, body }) => (
+            <div key={title} className="surface p-5 text-left">
+              <Icon className="h-5 w-5 text-gold" />
+              <h2 className="mt-3 font-display text-base">{title}</h2>
+              <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">{body}</p>
+            </div>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }
