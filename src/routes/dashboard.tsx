@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, Flame } from "lucide-react";
-import { AppShell, EmptyState, ProgressRing, StatCard } from "@/components/AppShell";
+import { AppShell, ProgressRing, StatCard } from "@/components/AppShell";
 import { Heatmap } from "@/components/Heatmap";
+import { TradeCalendar } from "@/components/TradeCalendar";
 import { computeStreak, dayRatio, journalStats, lastNDays, todayKey, useCompletions, useJournal, useTasks } from "@/lib/store";
 
 export const Route = createFileRoute("/dashboard")({
@@ -66,45 +67,7 @@ function Dashboard() {
         <Heatmap completions={completions} taskCount={tasks.length} />
       </section>
 
-      <section className="mt-4">
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">Recent trades</h2>
-          <Link to="/journal" className="text-xs text-gold">
-            View journal
-          </Link>
-        </div>
-        {entries.length === 0 ? (
-          <EmptyState
-            title="The journal is empty"
-            body="Start by logging one trade. Reviewing your own decisions is the fastest route to consistency."
-            action={
-              <Link to="/journal" className="bg-gold-gradient mt-2 rounded-full px-5 py-2.5 text-sm font-semibold text-primary-foreground">
-                Log a trade
-              </Link>
-            }
-          />
-        ) : (
-          <div className="space-y-2.5">
-            {entries.slice(0, 4).map((e) => (
-              <div key={e.id} className="surface flex items-center gap-3 p-4">
-                <span className="font-display text-base">{e.pair}</span>
-                <span className="text-xs text-muted-foreground">{e.date}</span>
-                <span
-                  className={`ml-auto rounded-full px-2.5 py-0.5 text-[11px] capitalize ${
-                    e.result === "win"
-                      ? "bg-success/15 text-success"
-                      : e.result === "loss"
-                        ? "bg-destructive/15 text-destructive"
-                        : "bg-secondary text-muted-foreground"
-                  }`}
-                >
-                  {e.result}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
+      <TradeCalendar entries={entries} />
     </AppShell>
   );
 }
