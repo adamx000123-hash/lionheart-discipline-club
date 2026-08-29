@@ -26,7 +26,7 @@ export function AppShell({
         <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-border/70 px-4 py-6 lg:flex">
           <Link to="/" className="mb-8 flex items-center gap-3 px-2">
             <img src={lion} alt="Legend crest" width={40} height={40} className="h-10 w-10 object-contain" />
-            <span className="font-display text-lg tracking-[0.25em]">LEGEND</span>
+            <span className="font-hero text-lg font-bold tracking-[0.25em]">LEGEND</span>
           </Link>
           <nav className="flex flex-1 flex-col gap-1">
             {NAV.map(({ to, label, icon: Icon }) => (
@@ -83,7 +83,7 @@ export function StatCard({ label, value, hint }: { label: string; value: ReactNo
   return (
     <div className="surface p-4">
       <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">{label}</p>
-      <p className="mt-2 font-display text-2xl text-gold">{value}</p>
+      <p className="font-stats mt-2 text-2xl font-semibold text-gold">{value}</p>
       {hint && <p className="mt-1 text-xs text-muted-foreground">{hint}</p>}
     </div>
   );

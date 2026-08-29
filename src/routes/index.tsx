@@ -25,7 +25,7 @@ function Landing() {
   return (
     <div className="hero-vignette grain relative min-h-screen overflow-hidden">
       <header className="relative z-10 mx-auto flex w-full max-w-6xl items-center justify-between px-5 py-6">
-        <span className="font-display text-sm tracking-[0.4em]">LEGEND</span>
+        <span className="font-hero text-sm font-bold tracking-[0.4em]">LEGEND</span>
         <Link
           to="/dashboard"
           className="rounded-full border border-border px-4 py-2 text-xs uppercase tracking-[0.16em] text-muted-foreground transition-colors hover:border-gold/50 hover:text-gold"
@@ -43,7 +43,7 @@ function Landing() {
           className="h-44 w-44 object-contain drop-shadow-[0_0_60px_rgba(201,168,92,0.18)] sm:h-56 sm:w-56"
         />
         <p className="mt-6 text-[11px] uppercase tracking-[0.42em] text-gold/80">Private members' desk</p>
-        <h1 className="mt-5 font-display text-4xl leading-[1.1] sm:text-6xl">
+        <h1 className="font-hero mt-5 text-4xl font-bold leading-[1.1] sm:text-6xl">
           Discipline is the <span className="text-gradient-gold">edge</span>. Everything else is noise.
         </h1>
         <p className="mt-6 max-w-xl text-sm leading-relaxed text-muted-foreground sm:text-base">

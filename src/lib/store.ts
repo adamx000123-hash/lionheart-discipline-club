@@ -17,7 +17,7 @@ export type JournalEntry = {
   exit: string;
   rr: string;
   result: "win" | "loss" | "breakeven";
-  screenshot?: string;
+  screenshot?: string | undefined;
   notes: string;
 };
 
