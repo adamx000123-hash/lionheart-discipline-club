@@ -17,9 +17,16 @@ export const Route = createFileRoute("/journal")({
   head: () => ({
     meta: [
       { title: "Trade Journal — LEGEND" },
-      { name: "description", content: "Log every forex trade with SMC context, screenshots and honest notes on emotion and discipline." },
+      {
+        name: "description",
+        content:
+          "Log every forex trade with SMC context, screenshots and honest notes on emotion and discipline.",
+      },
       { property: "og:title", content: "Trade Journal — LEGEND" },
-      { property: "og:description", content: "Log every trade with SMC context, screenshots and discipline notes." },
+      {
+        property: "og:description",
+        content: "Log every trade with SMC context, screenshots and discipline notes.",
+      },
     ],
   }),
   component: JournalPage,
@@ -54,7 +61,10 @@ function JournalPage() {
 
   const save = () => {
     if (!form.pair.trim()) return;
-    setEntries((prev) => [{ ...form, id: crypto.randomUUID(), pair: form.pair.toUpperCase() }, ...prev]);
+    setEntries((prev) => [
+      { ...form, id: crypto.randomUUID(), pair: form.pair.toUpperCase() },
+      ...prev,
+    ]);
     setForm(empty);
     setOpen(false);
   };
@@ -69,7 +79,11 @@ function JournalPage() {
   return (
     <AppShell title="Journal" subtitle="Unlogged trades did not happen. Write them down.">
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <StatCard label="Win rate" value={`${stats.winRate}%`} hint={`${stats.wins}W / ${stats.losses}L`} />
+        <StatCard
+          label="Win rate"
+          value={`${stats.winRate}%`}
+          hint={`${stats.wins}W / ${stats.losses}L`}
+        />
         <StatCard label="Total trades" value={stats.total} />
         <StatCard label="Avg R:R" value={stats.avgRR ? stats.avgRR.toFixed(2) : "—"} />
         <StatCard label="Streak" value={streak} hint="disciplined days" />
@@ -80,8 +94,10 @@ function JournalPage() {
           <button
             key={f}
             onClick={() => setFilter(f)}
-            className={`rounded-full border px-4 py-1.5 text-xs capitalize transition-colors ${
-              filter === f ? "border-gold/60 bg-gold/10 text-gold" : "border-border text-muted-foreground hover:text-foreground"
+            className={`glass-chip px-4 py-1.5 text-xs capitalize transition-all duration-200 ${
+              filter === f
+                ? "border-gold/60 bg-gold/10 text-gold shadow-[0_0_18px_-10px_var(--gold)]"
+                : "text-muted-foreground hover:border-white/[0.22] hover:bg-white/[0.07] hover:text-foreground"
             }`}
           >
             {f}
@@ -89,7 +105,7 @@ function JournalPage() {
         ))}
         <button
           onClick={() => setOpen(true)}
-          className="bg-gold-gradient ml-auto inline-flex items-center gap-2 rounded-full px-5 py-2 text-xs font-semibold text-primary-foreground"
+          className="glass-button glass-button-gold ml-auto inline-flex px-5 py-2 text-xs font-semibold"
         >
           <Plus className="h-4 w-4" /> New entry
         </button>
@@ -103,7 +119,7 @@ function JournalPage() {
             action={
               <button
                 onClick={() => setOpen(true)}
-                className="bg-gold-gradient mt-2 rounded-full px-5 py-2.5 text-sm font-semibold text-primary-foreground"
+                className="glass-button glass-button-gold mt-2 px-5 py-2.5 text-sm font-semibold"
               >
                 Log first trade
               </button>
@@ -111,7 +127,10 @@ function JournalPage() {
           />
         ) : (
           visible.map((e) => (
-            <article key={e.id} className="surface animate-rise p-4">
+            <article
+              key={e.id}
+              className="surface animate-rise p-4 transition-transform duration-300 hover:-translate-y-0.5"
+            >
               <div className="flex flex-wrap items-center gap-3">
                 <span className="font-display text-lg">{e.pair}</span>
                 <span
@@ -130,7 +149,7 @@ function JournalPage() {
                 <button
                   onClick={() => setEntries((prev) => prev.filter((x) => x.id !== e.id))}
                   aria-label="Delete entry"
-                  className="ml-auto text-muted-foreground hover:text-destructive"
+                  className="glass-icon-button ml-auto hover:border-destructive/50 hover:bg-destructive/10 hover:text-destructive"
                 >
                   <Trash2 className="h-4 w-4" />
                 </button>
@@ -139,7 +158,10 @@ function JournalPage() {
               {e.concepts.length > 0 && (
                 <div className="mt-2 flex flex-wrap gap-1.5">
                   {e.concepts.map((c) => (
-                    <span key={c} className="rounded-md border border-border px-2 py-0.5 text-[11px] text-muted-foreground">
+                    <span
+                      key={c}
+                      className="glass-chip px-2 py-0.5 text-[11px] text-muted-foreground"
+                    >
                       {c}
                     </span>
                   ))}
@@ -150,9 +172,16 @@ function JournalPage() {
                   Entry {e.entry || "—"} · Exit {e.exit || "—"}
                 </p>
               )}
-              {e.notes && <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{e.notes}</p>}
+              {e.notes && (
+                <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{e.notes}</p>
+              )}
               {e.screenshot && (
-                <img src={e.screenshot} alt={`${e.pair} chart`} loading="lazy" className="mt-3 max-h-72 w-full rounded-lg object-cover" />
+                <img
+                  src={e.screenshot}
+                  alt={`${e.pair} chart`}
+                  loading="lazy"
+                  className="mt-3 max-h-72 w-full rounded-lg object-cover"
+                />
               )}
             </article>
           ))
@@ -164,7 +193,11 @@ function JournalPage() {
           <div className="surface animate-rise max-h-[92vh] w-full max-w-lg overflow-y-auto p-5">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="font-display text-lg">New trade entry</h2>
-              <button onClick={() => setOpen(false)} aria-label="Close">
+              <button
+                onClick={() => setOpen(false)}
+                aria-label="Close"
+                className="glass-icon-button"
+              >
                 <X className="h-5 w-5 text-muted-foreground" />
               </button>
             </div>
@@ -172,14 +205,29 @@ function JournalPage() {
             <div className="grid gap-3">
               <div className="grid grid-cols-2 gap-3">
                 <Field label="Date">
-                  <input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} className={inputCls} />
+                  <input
+                    type="date"
+                    value={form.date}
+                    onChange={(e) => setForm({ ...form, date: e.target.value })}
+                    className={inputCls}
+                  />
                 </Field>
                 <Field label="Pair">
-                  <input value={form.pair} onChange={(e) => setForm({ ...form, pair: e.target.value })} placeholder="EURUSD" className={inputCls} />
+                  <input
+                    value={form.pair}
+                    onChange={(e) => setForm({ ...form, pair: e.target.value })}
+                    placeholder="EURUSD"
+                    className={inputCls}
+                  />
                 </Field>
               </div>
               <Field label="Setup / strategy">
-                <input value={form.setup} onChange={(e) => setForm({ ...form, setup: e.target.value })} placeholder="London sweep into 15m OB" className={inputCls} />
+                <input
+                  value={form.setup}
+                  onChange={(e) => setForm({ ...form, setup: e.target.value })}
+                  placeholder="London sweep into 15m OB"
+                  className={inputCls}
+                />
               </Field>
               <Field label="SMC concepts">
                 <div className="flex flex-wrap gap-1.5">
@@ -195,8 +243,10 @@ function JournalPage() {
                             concepts: on ? f.concepts.filter((x) => x !== c) : [...f.concepts, c],
                           }))
                         }
-                        className={`rounded-md border px-2.5 py-1 text-[11px] transition-colors ${
-                          on ? "border-gold/60 bg-gold/10 text-gold" : "border-border text-muted-foreground"
+                        className={`glass-chip rounded-md px-2.5 py-1 text-[11px] transition-all duration-200 ${
+                          on
+                            ? "border-gold/60 bg-gold/10 text-gold shadow-[0_0_18px_-10px_var(--gold)]"
+                            : "text-muted-foreground hover:border-white/[0.22] hover:bg-white/[0.07]"
                         }`}
                       >
                         {c}
@@ -207,13 +257,26 @@ function JournalPage() {
               </Field>
               <div className="grid grid-cols-3 gap-3">
                 <Field label="Entry">
-                  <input value={form.entry} onChange={(e) => setForm({ ...form, entry: e.target.value })} className={inputCls} />
+                  <input
+                    value={form.entry}
+                    onChange={(e) => setForm({ ...form, entry: e.target.value })}
+                    className={inputCls}
+                  />
                 </Field>
                 <Field label="Exit">
-                  <input value={form.exit} onChange={(e) => setForm({ ...form, exit: e.target.value })} className={inputCls} />
+                  <input
+                    value={form.exit}
+                    onChange={(e) => setForm({ ...form, exit: e.target.value })}
+                    className={inputCls}
+                  />
                 </Field>
                 <Field label="R:R">
-                  <input value={form.rr} onChange={(e) => setForm({ ...form, rr: e.target.value })} placeholder="2.5" className={inputCls} />
+                  <input
+                    value={form.rr}
+                    onChange={(e) => setForm({ ...form, rr: e.target.value })}
+                    placeholder="2.5"
+                    className={inputCls}
+                  />
                 </Field>
               </div>
               <Field label="Result">
@@ -223,8 +286,10 @@ function JournalPage() {
                       key={r}
                       type="button"
                       onClick={() => setForm({ ...form, result: r })}
-                      className={`flex-1 rounded-lg border px-3 py-2 text-xs capitalize transition-colors ${
-                        form.result === r ? "border-gold/60 bg-gold/10 text-gold" : "border-border text-muted-foreground"
+                      className={`glass-control flex-1 px-3 py-2 text-xs capitalize transition-all duration-200 ${
+                        form.result === r
+                          ? "border-gold/60 bg-gold/10 text-gold shadow-[0_0_18px_-10px_var(--gold)]"
+                          : "text-muted-foreground hover:border-white/[0.22] hover:bg-white/[0.07]"
                       }`}
                     >
                       {r}
@@ -233,10 +298,15 @@ function JournalPage() {
                 </div>
               </Field>
               <Field label="Chart screenshot">
-                <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-dashed border-input px-3 py-3 text-xs text-muted-foreground hover:border-gold/50">
+                <label className="glass-control flex cursor-pointer items-center gap-2 border-dashed px-3 py-3 text-xs text-muted-foreground hover:border-gold/50 hover:bg-gold/[0.06]">
                   <ImagePlus className="h-4 w-4" />
                   {form.screenshot ? "Screenshot attached — replace" : "Upload chart screenshot"}
-                  <input type="file" accept="image/*" className="hidden" onChange={(e) => onFile(e.target.files?.[0])} />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => onFile(e.target.files?.[0])}
+                  />
                 </label>
               </Field>
               <Field label="Emotion & discipline notes">
@@ -248,7 +318,10 @@ function JournalPage() {
                   className={inputCls}
                 />
               </Field>
-              <button onClick={save} className="bg-gold-gradient mt-1 rounded-lg py-3 text-sm font-semibold text-primary-foreground">
+              <button
+                onClick={save}
+                className="glass-button glass-button-gold mt-1 w-full rounded-lg py-3 text-sm font-semibold"
+              >
                 Save entry
               </button>
             </div>
@@ -260,12 +333,14 @@ function JournalPage() {
 }
 
 const inputCls =
-  "w-full rounded-lg border border-input bg-background/60 px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground focus:border-gold/50";
+  "glass-control w-full px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground";
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-[11px] uppercase tracking-[0.16em] text-muted-foreground">{label}</span>
+      <span className="mb-1.5 block text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+        {label}
+      </span>
       {children}
     </label>
   );
