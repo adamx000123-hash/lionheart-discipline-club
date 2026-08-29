@@ -67,11 +67,11 @@ function ProgressPage() {
             <p className="text-xs text-muted-foreground">Wins</p>
           </div>
           <div>
-            <p className="font-display text-2xl text-destructive">{stats.losses}</p>
+            <p className="font-stats text-2xl font-semibold text-destructive">{stats.losses}</p>
             <p className="text-xs text-muted-foreground">Losses</p>
           </div>
           <div>
-            <p className="font-display text-2xl">{stats.total}</p>
+            <p className="font-stats text-2xl font-semibold">{stats.total}</p>
             <p className="text-xs text-muted-foreground">Total logged</p>
           </div>
         </div>
