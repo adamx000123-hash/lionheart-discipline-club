@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, Flame } from "lucide-react";
-import { AppShell, EmptyState, ProgressRing, StatCard } from "@/components/AppShell";
+import { AppShell, ProgressRing, StatCard } from "@/components/AppShell";
 import { Heatmap } from "@/components/Heatmap";
+import { TradeCalendar } from "@/components/TradeCalendar";
 import { computeStreak, dayRatio, journalStats, lastNDays, todayKey, useCompletions, useJournal, useTasks } from "@/lib/store";
 
 export const Route = createFileRoute("/dashboard")({
