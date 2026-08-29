@@ -46,13 +46,13 @@ function TasksPage() {
         <div className="surface flex items-center gap-5 p-5 lg:col-span-2">
           <div className="relative shrink-0">
             <ProgressRing value={ratio} size={112} />
-            <span className="absolute inset-0 flex items-center justify-center font-display text-xl text-gold">
+            <span className="font-stats absolute inset-0 flex items-center justify-center text-xl font-semibold text-gold">
               {Math.round(ratio * 100)}%
             </span>
           </div>
           <div>
             <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Today's discipline</p>
-            <p className="mt-1 font-display text-xl">
+            <p className="font-stats mt-1 text-xl font-semibold">
               {done.length} of {tasks.length} completed
             </p>
             <p className="mt-2 max-w-sm text-xs leading-relaxed text-muted-foreground">
@@ -65,7 +65,7 @@ function TasksPage() {
         <div className="surface flex items-center gap-4 p-5">
           <Flame className="h-9 w-9 text-gold" />
           <div>
-            <p className="font-display text-3xl text-gold">{streak}</p>
+            <p className="font-stats text-3xl font-semibold text-gold">{streak}</p>
             <p className="text-xs text-muted-foreground">consecutive disciplined days</p>
           </div>
         </div>

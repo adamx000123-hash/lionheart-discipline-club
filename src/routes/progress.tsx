@@ -63,7 +63,7 @@ function ProgressPage() {
         <h2 className="mb-4 text-[11px] uppercase tracking-[0.22em] text-muted-foreground">Trade record</h2>
         <div className="grid grid-cols-3 gap-4 text-center">
           <div>
-            <p className="font-display text-2xl text-success">{stats.wins}</p>
+            <p className="font-stats text-2xl font-semibold text-success">{stats.wins}</p>
             <p className="text-xs text-muted-foreground">Wins</p>
           </div>
           <div>

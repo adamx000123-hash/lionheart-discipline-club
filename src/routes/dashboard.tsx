@@ -34,13 +34,13 @@ function Dashboard() {
         <div className="surface flex items-center gap-5 p-5">
           <div className="relative shrink-0">
             <ProgressRing value={ratio} size={104} />
-            <span className="absolute inset-0 flex items-center justify-center font-display text-lg text-gold">
+            <span className="font-stats absolute inset-0 flex items-center justify-center text-lg font-semibold text-gold">
               {Math.round(ratio * 100)}%
             </span>
           </div>
           <div className="min-w-0">
             <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Today's routine</p>
-            <p className="mt-1 font-display text-lg">
+            <p className="font-stats mt-1 text-lg font-semibold">
               {done.length}/{tasks.length} done
             </p>
             <Link to="/tasks" className="mt-2 inline-flex items-center gap-1 text-xs text-gold">
@@ -51,7 +51,7 @@ function Dashboard() {
         <div className="surface flex items-center gap-4 p-5">
           <Flame className="h-8 w-8 text-gold" />
           <div>
-            <p className="font-display text-3xl text-gold">{streak}</p>
+            <p className="font-stats text-3xl font-semibold text-gold">{streak}</p>
             <p className="text-xs text-muted-foreground">day discipline streak</p>
           </div>
         </div>
