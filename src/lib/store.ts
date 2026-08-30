@@ -1,11 +1,25 @@
 import { useCallback, useEffect, useState } from "react";
 
+export type RoutineGroup = "Morning" | "Fuel" | "Focus" | "Learn" | "Worship" | "Night";
+
 export type Task = {
   id: string;
   title: string;
   detail?: string;
-  group: "Pre-market" | "Execution" | "Review";
+  group: RoutineGroup;
 };
+
+export type Evidence = {
+  name: string;
+  dataUrl: string;
+  uploadedAt: string;
+};
+
+export type EvidenceMap = Record<string, Record<string, Evidence>>;
+
+export const PRAYER_IDS = ["fajr", "dhuhr", "asr", "maghrib", "isha"] as const;
+export type PrayerId = (typeof PRAYER_IDS)[number];
+export type PrayerEvidenceMap = Record<string, Partial<Record<PrayerId, Evidence>>>;
 
 export type JournalEntry = {
   id: string;
@@ -26,9 +40,14 @@ export type Completions = Record<string, string[]>; // date -> task ids
 const KEYS = {
   tasks: "legend.tasks",
   completions: "legend.completions",
+  evidence: "legend.evidence",
+  prayerEvidence: "legend.prayerEvidence",
+  taskSchemaVersion: "legend.tasks.schemaVersion",
   journal: "legend.journal",
   profile: "legend.profile",
 };
+
+const TASK_SCHEMA_VERSION = 2;
 
 export const SMC_CONCEPTS = [
   "Liquidity sweep",
@@ -41,13 +60,48 @@ export const SMC_CONCEPTS = [
 ];
 
 export const DEFAULT_TASKS: Task[] = [
-  { id: "t1", title: "Review higher timeframe bias", detail: "Daily and 4H structure before anything else.", group: "Pre-market" },
-  { id: "t2", title: "Mark key liquidity and order blocks", detail: "Levels defined before the session opens.", group: "Pre-market" },
-  { id: "t3", title: "Confirm max risk per trade", detail: "No position exceeds 1% of account equity.", group: "Execution" },
-  { id: "t4", title: "Only A+ setups taken", detail: "No entry without confirmation from the plan.", group: "Execution" },
-  { id: "t5", title: "No revenge trades after a loss", detail: "Step away for 15 minutes minimum.", group: "Execution" },
-  { id: "t6", title: "Journal every trade taken", detail: "Screenshot, reasoning, emotion.", group: "Review" },
-  { id: "t7", title: "Grade the day honestly", detail: "Process over profit and loss.", group: "Review" },
+  {
+    id: "wake-early",
+    title: "Wake up early",
+    detail: "Aim for at least 8 hours of sleep, rise on time, and start the day before the noise.",
+    group: "Morning",
+  },
+  {
+    id: "morning-shower",
+    title: "Morning shower",
+    detail: "Reset your body and mind immediately after waking up.",
+    group: "Morning",
+  },
+  {
+    id: "healthy-breakfast",
+    title: "Healthy breakfast",
+    detail: "Fuel the day with a clean meal — no autopilot choices.",
+    group: "Fuel",
+  },
+  {
+    id: "productive-session",
+    title: "Productive session",
+    detail: "Work, study, or build something meaningful with focused time.",
+    group: "Focus",
+  },
+  {
+    id: "read-and-learn",
+    title: "Read or learn",
+    detail: "A useful book, lesson, or video that adds a real idea to your mind.",
+    group: "Learn",
+  },
+  {
+    id: "five-prayers",
+    title: "The five prayers",
+    detail: "Log one private proof for Fajr, Dhuhr, Asr, Maghrib, and Isha.",
+    group: "Worship",
+  },
+  {
+    id: "sleep-early",
+    title: "Sleep early",
+    detail: "Sleep early and protect the 8 hours of rest needed to repeat the standard tomorrow.",
+    group: "Night",
+  },
 ];
 
 export function todayKey(d = new Date()) {
@@ -57,6 +111,13 @@ export function todayKey(d = new Date()) {
 function read<T>(key: string, fallback: T): T {
   if (typeof window === "undefined") return fallback;
   try {
+    const version = Number(window.localStorage.getItem(KEYS.taskSchemaVersion) ?? "0");
+    if (
+      version < TASK_SCHEMA_VERSION &&
+      [KEYS.tasks, KEYS.completions, KEYS.evidence, KEYS.prayerEvidence].includes(key)
+    ) {
+      return fallback;
+    }
     const raw = window.localStorage.getItem(key);
     return raw ? (JSON.parse(raw) as T) : fallback;
   } catch {
@@ -92,10 +153,30 @@ function useStored<T>(key: string, fallback: T) {
   return [value, update, hydrated] as const;
 }
 
-export const useTasks = () => useStored<Task[]>(KEYS.tasks, DEFAULT_TASKS);
+export const useTasks = () => {
+  const stored = useStored<Task[]>(KEYS.tasks, DEFAULT_TASKS);
+  const [, , hydrated] = stored;
+
+  useEffect(() => {
+    if (!hydrated || typeof window === "undefined") return;
+    const version = Number(window.localStorage.getItem(KEYS.taskSchemaVersion) ?? "0");
+    if (version < TASK_SCHEMA_VERSION) {
+      [KEYS.tasks, KEYS.completions, KEYS.evidence, KEYS.prayerEvidence].forEach((key) =>
+        window.localStorage.removeItem(key),
+      );
+      window.localStorage.setItem(KEYS.taskSchemaVersion, String(TASK_SCHEMA_VERSION));
+    }
+  }, [hydrated]);
+
+  return stored;
+};
+
 export const useCompletions = () => useStored<Completions>(KEYS.completions, {});
+export const useEvidence = () => useStored<EvidenceMap>(KEYS.evidence, {});
+export const usePrayerEvidence = () => useStored<PrayerEvidenceMap>(KEYS.prayerEvidence, {});
 export const useJournal = () => useStored<JournalEntry[]>(KEYS.journal, []);
-export const useProfile = () => useStored<{ name: string; target: number }>(KEYS.profile, { name: "Trader", target: 90 });
+export const useProfile = () =>
+  useStored<{ name: string; target: number }>(KEYS.profile, { name: "Trader", target: 90 });
 
 export function dayRatio(completions: Completions, taskCount: number, date: string) {
   if (!taskCount) return 0;
