@@ -3,6 +3,7 @@ import { ArrowRight, Flame } from "lucide-react";
 import { AppShell, ProgressRing, StatCard } from "@/components/AppShell";
 import { Heatmap } from "@/components/Heatmap";
 import { TradeCalendar } from "@/components/TradeCalendar";
+import { useI18n } from "@/lib/i18n";
 import { computeStreak, dayRatio, journalStats, lastNDays, todayKey, useCompletions, useJournal, useTasks } from "@/lib/store";
 
 export const Route = createFileRoute("/dashboard")({
@@ -18,6 +19,7 @@ export const Route = createFileRoute("/dashboard")({
 });
 
 function Dashboard() {
+  const { t } = useI18n();
   const [tasks] = useTasks();
   const [completions] = useCompletions();
   const [entries] = useJournal();
@@ -30,7 +32,7 @@ function Dashboard() {
   const weekAvg = Math.round((week.reduce((a, d) => a + dayRatio(completions, tasks.length, d), 0) / week.length) * 100);
 
   return (
-    <AppShell title="Overview" subtitle="Consistency is the scoreboard. Profit is the byproduct.">
+    <AppShell title={t("dash.title")} subtitle={t("dash.subtitle")}>
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="surface flex items-center gap-5 p-5">
           <div className="relative shrink-0">
@@ -40,12 +42,12 @@ function Dashboard() {
             </span>
           </div>
           <div className="min-w-0">
-            <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Today's routine</p>
+            <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">{t("dash.todayRoutine")}</p>
             <p className="font-stats mt-1 text-lg font-semibold">
-              {done.length}/{tasks.length} done
+              {t("dash.done", { done: done.length, total: tasks.length })}
             </p>
             <Link to="/tasks" className="mt-2 inline-flex items-center gap-1 text-xs text-gold">
-              Open checklist <ArrowRight className="h-3 w-3" />
+              {t("dash.openChecklist")} <ArrowRight className="h-3 w-3 rtl:rotate-180" />
             </Link>
           </div>
         </div>
@@ -53,17 +55,17 @@ function Dashboard() {
           <Flame className="h-8 w-8 text-gold" />
           <div>
             <p className="font-stats text-3xl font-semibold text-gold">{streak}</p>
-            <p className="text-xs text-muted-foreground">day discipline streak</p>
+            <p className="text-xs text-muted-foreground">{t("dash.streak")}</p>
           </div>
         </div>
         <div className="grid grid-cols-2 gap-4">
-          <StatCard label="7-day avg" value={`${weekAvg}%`} />
-          <StatCard label="Win rate" value={`${stats.winRate}%`} />
+          <StatCard label={t("dash.weekAvg")} value={`${weekAvg}%`} />
+          <StatCard label={t("dash.winRate")} value={`${stats.winRate}%`} />
         </div>
       </div>
 
       <section className="surface mt-4 p-5">
-        <h2 className="mb-4 text-[11px] uppercase tracking-[0.22em] text-muted-foreground">Consistency — last 17 weeks</h2>
+        <h2 className="mb-4 text-[11px] uppercase tracking-[0.22em] text-muted-foreground">{t("dash.consistency")}</h2>
         <Heatmap completions={completions} taskCount={tasks.length} />
       </section>
 

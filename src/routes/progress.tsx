@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, StatCard } from "@/components/AppShell";
 import { Heatmap } from "@/components/Heatmap";
+import { useI18n } from "@/lib/i18n";
 import {
   computeStreak,
   dayRatio,
@@ -30,6 +31,7 @@ export const Route = createFileRoute("/progress")({
 });
 
 function ProgressPage() {
+  const { t } = useI18n();
   const [tasks] = useTasks();
   const [completions] = useCompletions();
   const [entries] = useJournal();
@@ -42,17 +44,17 @@ function ProgressPage() {
   const bars = lastNDays(14);
 
   return (
-    <AppShell title="Progress" subtitle="Numbers do not negotiate.">
+    <AppShell title={t("progress.title")} subtitle={t("progress.subtitle")}>
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <StatCard label="30-day compliance" value={`${avg30}%`} />
-        <StatCard label="Perfect days" value={perfect} hint="last 30 days" />
-        <StatCard label="Current streak" value={computeStreak(completions, tasks.length)} />
-        <StatCard label="Avg R:R" value={stats.avgRR ? stats.avgRR.toFixed(2) : "—"} />
+        <StatCard label={t("progress.compliance30")} value={`${avg30}%`} />
+        <StatCard label={t("progress.perfectDays")} value={perfect} hint={t("progress.last30")} />
+        <StatCard label={t("progress.currentStreak")} value={computeStreak(completions, tasks.length)} />
+        <StatCard label={t("journal.avgRR")} value={stats.avgRR ? stats.avgRR.toFixed(2) : "—"} />
       </div>
 
       <section className="surface mt-4 p-5 transition-transform duration-300 hover:-translate-y-0.5">
         <h2 className="mb-5 text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
-          Last 14 days
+          {t("progress.last14")}
         </h2>
         <div className="flex h-40 items-end gap-1.5 rounded-xl border border-white/[0.06] bg-white/[0.018] p-3">
           {bars.map((d) => {
@@ -78,27 +80,27 @@ function ProgressPage() {
 
       <section className="surface mt-4 p-5 transition-transform duration-300 hover:-translate-y-0.5">
         <h2 className="mb-4 text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
-          Discipline heatmap
+          {t("progress.heatmap")}
         </h2>
         <Heatmap completions={completions} taskCount={tasks.length} />
       </section>
 
       <section className="surface mt-4 p-5 transition-transform duration-300 hover:-translate-y-0.5">
         <h2 className="mb-4 text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
-          Trade record
+          {t("progress.record")}
         </h2>
         <div className="grid grid-cols-3 gap-4 text-center">
           <div>
             <p className="font-stats text-2xl font-semibold text-success">{stats.wins}</p>
-            <p className="text-xs text-muted-foreground">Wins</p>
+            <p className="text-xs text-muted-foreground">{t("progress.wins")}</p>
           </div>
           <div>
             <p className="font-stats text-2xl font-semibold text-destructive">{stats.losses}</p>
-            <p className="text-xs text-muted-foreground">Losses</p>
+            <p className="text-xs text-muted-foreground">{t("progress.losses")}</p>
           </div>
           <div>
             <p className="font-stats text-2xl font-semibold">{stats.total}</p>
-            <p className="text-xs text-muted-foreground">Total logged</p>
+            <p className="text-xs text-muted-foreground">{t("progress.totalLogged")}</p>
           </div>
         </div>
       </section>

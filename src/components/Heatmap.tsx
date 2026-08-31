@@ -1,6 +1,8 @@
+import { useI18n } from "@/lib/i18n";
 import { dayRatio, lastNDays, type Completions } from "@/lib/store";
 
 export function Heatmap({ completions, taskCount, days = 119 }: { completions: Completions; taskCount: number; days?: number }) {
+  const { t } = useI18n();
   const list = lastNDays(days);
   return (
     <div className="overflow-x-auto">
@@ -19,7 +21,7 @@ export function Heatmap({ completions, taskCount, days = 119 }: { completions: C
         })}
       </div>
       <div className="mt-3 flex items-center gap-2 text-[11px] text-muted-foreground">
-        <span>Undisciplined</span>
+        <span>{t("heatmap.low")}</span>
         {[0.06, 0.35, 0.6, 0.85, 1].map((o) => (
           <span
             key={o}
@@ -27,7 +29,7 @@ export function Heatmap({ completions, taskCount, days = 119 }: { completions: C
             style={{ backgroundColor: `color-mix(in oklab, var(--gold) ${o * 100}%, transparent)` }}
           />
         ))}
-        <span>Full compliance</span>
+        <span>{t("heatmap.high")}</span>
       </div>
     </div>
   );
