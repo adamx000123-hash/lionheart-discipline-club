@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
+import { LanguageToggle, useI18n } from "@/lib/i18n";
 import { DEFAULT_TASKS, useCompletions, useJournal, useProfile, useTasks } from "@/lib/store";
 
 export const Route = createFileRoute("/settings")({
@@ -21,20 +22,21 @@ export const Route = createFileRoute("/settings")({
 });
 
 function SettingsPage() {
+  const { t } = useI18n();
   const [profile, setProfile] = useProfile();
   const [, setTasks] = useTasks();
   const [, setCompletions] = useCompletions();
   const [, setJournal] = useJournal();
 
   return (
-    <AppShell title="Settings" subtitle="Define the standard you refuse to fall below.">
+    <AppShell title={t("settings.title")} subtitle={t("settings.subtitle")}>
       <div className="grid gap-4 lg:max-w-2xl">
         <section className="surface p-5 transition-transform duration-300 hover:-translate-y-0.5">
           <h2 className="mb-4 text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
-            Profile
+            {t("settings.profile")}
           </h2>
           <label className="block">
-            <span className="mb-1.5 block text-xs text-muted-foreground">Display name</span>
+            <span className="mb-1.5 block text-xs text-muted-foreground">{t("settings.displayName")}</span>
             <input
               value={profile.name}
               onChange={(e) => setProfile({ ...profile, name: e.target.value })}
@@ -43,7 +45,7 @@ function SettingsPage() {
           </label>
           <label className="mt-4 block">
             <span className="mb-1.5 block text-xs text-muted-foreground">
-              Monthly compliance target: {profile.target}%
+              {t("settings.target", { n: profile.target })}
             </span>
             <input
               type="range"
@@ -58,29 +60,37 @@ function SettingsPage() {
 
         <section className="surface p-5 transition-transform duration-300 hover:-translate-y-0.5">
           <h2 className="mb-2 text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
-            Data
+            {t("settings.language")}
+          </h2>
+          <p className="mb-4 text-xs text-muted-foreground">{t("settings.languageHint")}</p>
+          <LanguageToggle />
+        </section>
+
+        <section className="surface p-5 transition-transform duration-300 hover:-translate-y-0.5">
+          <h2 className="mb-2 text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+            {t("settings.data")}
           </h2>
           <p className="mb-4 text-xs text-muted-foreground">
-            Your routine, journal and streaks are stored privately on this device.
+            {t("settings.dataHint")}
           </p>
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => setTasks(DEFAULT_TASKS)}
               className="glass-button rounded-lg px-4 py-2 text-xs hover:border-gold/50 hover:text-gold"
             >
-              Restore default routine
+              {t("settings.restore")}
             </button>
             <button
               onClick={() => setCompletions({})}
               className="glass-button rounded-lg px-4 py-2 text-xs hover:border-gold/50 hover:text-gold"
             >
-              Clear streak history
+              {t("settings.clearStreaks")}
             </button>
             <button
               onClick={() => setJournal([])}
               className="glass-button rounded-lg border-destructive/40 px-4 py-2 text-xs text-destructive hover:bg-destructive/10"
             >
-              Delete all journal entries
+              {t("settings.deleteJournal")}
             </button>
           </div>
         </section>
