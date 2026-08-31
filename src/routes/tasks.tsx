@@ -24,6 +24,7 @@ import {
   Upload,
 } from "lucide-react";
 import { AppShell, ProgressRing } from "@/components/AppShell";
+import { useI18n } from "@/lib/i18n";
 import {
   PRAYER_IDS,
   type Evidence,
@@ -61,93 +62,25 @@ export const Route = createFileRoute("/tasks")({
 const MAX_IMAGE_SIZE = 8 * 1024 * 1024;
 const GROUP_ORDER: RoutineGroup[] = ["Morning", "Fuel", "Focus", "Learn", "Worship", "Night"];
 
-const GROUP_META: Record<
-  RoutineGroup,
-  { label: string; eyebrow: string; description: string; icon: LucideIcon }
-> = {
-  Morning: {
-    label: "Morning reset",
-    eyebrow: "01 / MORNING",
-    description: "Win the first hour before the world gets loud.",
-    icon: Sun,
-  },
-  Fuel: {
-    label: "Fuel",
-    eyebrow: "02 / NOURISH",
-    description: "Feed your focus with an intentional choice.",
-    icon: Apple,
-  },
-  Focus: {
-    label: "Focus",
-    eyebrow: "03 / BUILD",
-    description: "Turn a clear block of time into visible progress.",
-    icon: BriefcaseBusiness,
-  },
-  Learn: {
-    label: "Learn",
-    eyebrow: "04 / EXPAND",
-    description: "Add one useful idea to the person you are becoming.",
-    icon: BookOpen,
-  },
-  Worship: {
-    label: "Worship",
-    eyebrow: "05 / FIVE CHECKPOINTS",
-    description: "A calm rhythm across the day, logged privately.",
-    icon: Heart,
-  },
-  Night: {
-    label: "Night",
-    eyebrow: "06 / CLOSE THE LOOP",
-    description: "Rest well enough to meet tomorrow with strength.",
-    icon: MoonStar,
-  },
+const GROUP_ICON: Record<RoutineGroup, LucideIcon> = {
+  Morning: Sun,
+  Fuel: Apple,
+  Focus: BriefcaseBusiness,
+  Learn: BookOpen,
+  Worship: Heart,
+  Night: MoonStar,
 };
 
-const TASK_META: Record<string, { icon: LucideIcon; prompt: string; timing?: string }> = {
-  "wake-early": {
-    icon: Sun,
-    prompt: "A screenshot from your sleep app, alarm, or morning check-in works.",
-    timing: "Start of day",
-  },
-  "morning-shower": {
-    icon: Bath,
-    prompt: "Keep it private: a towel, shower timer, or simple check-in is enough.",
-    timing: "After waking",
-  },
-  "healthy-breakfast": {
-    icon: Apple,
-    prompt: "Photograph the meal or write what gave you clean energy today.",
-    timing: "Morning fuel",
-  },
-  "productive-session": {
-    icon: BriefcaseBusiness,
-    prompt: "Show your desk, notes, study screen, or the result you moved forward.",
-    timing: "Focus block",
-  },
-  "read-and-learn": {
-    icon: BookOpen,
-    prompt: "Share the cover, lesson, video, or one useful idea you kept.",
-    timing: "Mind upgrade",
-  },
-  "five-prayers": {
-    icon: Heart,
-    prompt: "Log each prayer separately. Proofs stay private on this device.",
-    timing: "Five moments",
-  },
-  "sleep-early": {
-    icon: MoonStar,
-    prompt: "Close the day with a calm check-in or a screenshot from your sleep app.",
-    timing: "End of day",
-  },
+const TASK_ICON: Record<string, LucideIcon> = {
+  "wake-early": Sun,
+  "morning-shower": Bath,
+  "healthy-breakfast": Apple,
+  "productive-session": BriefcaseBusiness,
+  "read-and-learn": BookOpen,
+  "five-prayers": Heart,
+  "sleep-early": MoonStar,
 };
 
-const PRAYERS: Array<{ id: PrayerId; label: string; time: string }> = [
-  { id: "fajr", label: "Fajr", time: "Dawn" },
-  { id: "dhuhr", label: "Dhuhr", time: "Midday" },
-  { id: "asr", label: "Asr", time: "Afternoon" },
-  { id: "maghrib", label: "Maghrib", time: "Sunset" },
-  { id: "isha", label: "Isha", time: "Night" },
-];
 
 function compressImage(file: File) {
   return new Promise<string>((resolve, reject) => {
@@ -178,10 +111,10 @@ function compressImage(file: File) {
 
 async function makeEvidence(file: File): Promise<Evidence> {
   if (!file.type.startsWith("image/")) {
-    throw new Error("Please choose an image file.");
+    throw new Error("err.image");
   }
   if (file.size > MAX_IMAGE_SIZE) {
-    throw new Error("That image is larger than 8 MB. Choose a smaller proof image.");
+    throw new Error("err.size");
   }
   return {
     name: file.name,
@@ -199,19 +132,20 @@ function EvidencePreview({
   onRemove: () => void;
   compact?: boolean;
 }) {
+  const { t } = useI18n();
   return (
     <div
       className={`group/evidence relative overflow-hidden rounded-xl border border-gold/30 bg-black/25 ${compact ? "h-14 w-14" : "h-24 w-full sm:w-36"}`}
     >
       <img
         src={evidence.dataUrl}
-        alt="Private proof preview"
+        alt={t("proof.preview")}
         className="h-full w-full object-cover"
       />
       <button
         type="button"
         onClick={onRemove}
-        aria-label="Remove proof image"
+        aria-label={t("proof.remove")}
         className="absolute right-1.5 top-1.5 inline-flex h-6 w-6 items-center justify-center rounded-full border border-white/20 bg-black/65 text-white opacity-0 backdrop-blur transition-opacity group-hover/evidence:opacity-100 focus:opacity-100"
       >
         <Trash2 className="h-3 w-3" />
@@ -231,6 +165,7 @@ function ProofButton({
   onChange: (event: ChangeEvent<HTMLInputElement>) => void;
   hasEvidence: boolean;
 }) {
+  const { t } = useI18n();
   return (
     <>
       <input
@@ -252,7 +187,7 @@ function ProofButton({
         ) : (
           <ImagePlus className="h-4 w-4 text-gold" />
         )}
-        {uploading ? "Saving proof..." : hasEvidence ? "Replace proof" : "Add proof"}
+        {uploading ? t("proof.saving") : hasEvidence ? t("proof.replace") : t("proof.add")}
       </label>
     </>
   );
@@ -275,11 +210,12 @@ function TaskCard({
   onUpload: (event: ChangeEvent<HTMLInputElement>) => void;
   onRemoveEvidence: () => void;
 }) {
-  const meta = TASK_META[task.id] ?? {
-    icon: Sparkles,
-    prompt: "Add a private proof when you are ready.",
-  };
-  const Icon = meta.icon;
+  const { t } = useI18n();
+  const Icon = TASK_ICON[task.id] ?? Sparkles;
+  const title = t(`task.${task.id}.title`) === `task.${task.id}.title` ? task.title : t(`task.${task.id}.title`);
+  const detail = t(`task.${task.id}.detail`) === `task.${task.id}.detail` ? task.detail : t(`task.${task.id}.detail`);
+  const prompt = t(`prompt.${task.id}`) === `prompt.${task.id}` ? t("prompt.default") : t(`prompt.${task.id}`);
+  const timing = t(`timing.${task.id}`) === `timing.${task.id}` ? "" : t(`timing.${task.id}`);
   const inputId = `proof-${task.id}`;
 
   return (
@@ -290,7 +226,7 @@ function TaskCard({
         <button
           type="button"
           onClick={onToggle}
-          aria-label={`${checked ? "Mark incomplete" : "Complete"} ${task.title}`}
+          aria-label={`${checked ? t("task.markIncomplete") : t("task.complete")} ${title}`}
           className={`mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border transition-all duration-200 active:scale-90 ${checked ? "border-gold/70 bg-gold/20 text-gold shadow-[0_0_22px_-8px_var(--gold)]" : "border-white/15 bg-white/[0.04] text-muted-foreground hover:border-gold/55 hover:bg-gold/10 hover:text-gold"}`}
         >
           {checked ? (
@@ -305,33 +241,33 @@ function TaskCard({
             <h3
               className={`text-sm font-semibold ${checked ? "text-gold-soft" : "text-foreground"}`}
             >
-              {task.title}
+              {title}
             </h3>
-            {meta.timing && (
+            {timing && (
               <span className="glass-chip inline-flex items-center gap-1 px-2 py-1 text-[10px] text-muted-foreground">
                 <Clock3 className="h-3 w-3" />
-                {meta.timing}
+                {timing}
               </span>
             )}
           </div>
-          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{task.detail}</p>
+          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{detail}</p>
           <p className="mt-3 flex items-start gap-1.5 text-[11px] leading-relaxed text-muted-foreground/80">
             <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-gold/80" />
-            {meta.prompt}
+            {prompt}
           </p>
         </div>
 
         <span
           className={`hidden shrink-0 rounded-full border px-2.5 py-1 text-[10px] uppercase tracking-[0.14em] sm:inline-flex ${checked ? "border-gold/35 bg-gold/10 text-gold" : "border-white/10 bg-white/[0.03] text-muted-foreground"}`}
         >
-          {checked ? "Complete" : "Open"}
+          {checked ? t("status.complete") : t("status.open")}
         </span>
       </div>
 
       <div className="mt-4 flex flex-col gap-3 border-t border-white/[0.08] pt-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
           <LockKeyhole className="h-3.5 w-3.5 text-gold/75" />
-          Proof stays private on this device.
+          {t("proof.private")}
         </div>
         <div className="flex items-center gap-2">
           {evidence && <EvidencePreview evidence={evidence} onRemove={onRemoveEvidence} compact />}
@@ -358,6 +294,7 @@ function PrayerCard({
   onUpload: (id: PrayerId, event: ChangeEvent<HTMLInputElement>) => void;
   onRemove: (id: PrayerId) => void;
 }) {
+  const { t } = useI18n();
   const complete = PRAYER_IDS.filter((id) => Boolean(evidence[id])).length;
 
   return (
@@ -376,26 +313,26 @@ function PrayerCard({
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <h3 className="text-sm font-semibold">The five prayers</h3>
+            <h3 className="text-sm font-semibold">{t("prayers.title")}</h3>
             <span className="glass-chip inline-flex items-center gap-1 px-2 py-1 text-[10px] text-gold">
               <Heart className="h-3 w-3" />
-              {complete} / 5 logged
+              {t("prayers.logged", { n: complete })}
             </span>
           </div>
           <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-            Upload one private proof for each prayer. Complete the full rhythm, one checkpoint at a
-            time.
+            {t("prayers.body")}
           </p>
         </div>
         <span
           className={`hidden shrink-0 rounded-full border px-2.5 py-1 text-[10px] uppercase tracking-[0.14em] sm:inline-flex ${complete === 5 ? "border-gold/35 bg-gold/10 text-gold" : "border-white/10 bg-white/[0.03] text-muted-foreground"}`}
         >
-          {complete === 5 ? "Complete" : "In progress"}
+          {complete === 5 ? t("status.complete") : t("status.inProgress")}
         </span>
       </div>
 
       <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-5">
-        {PRAYERS.map((prayer) => {
+        {PRAYER_IDS.map((prayerId) => {
+          const prayer = { id: prayerId, label: t(`prayer.${prayerId}`), time: t(`prayer.${prayerId}.time`) };
           const prayerEvidence = evidence[prayer.id];
           const inputId = `proof-prayer-${prayer.id}`;
           const isUploading = uploading === prayer.id;
@@ -423,7 +360,7 @@ function PrayerCard({
                     htmlFor={inputId}
                     className="flex cursor-pointer items-center justify-center gap-1 text-[10px] text-muted-foreground hover:text-gold"
                   >
-                    <Upload className="h-3 w-3" /> Replace
+                    <Upload className="h-3 w-3" /> {t("proof.replaceShort")}
                   </label>
                 </div>
               ) : (
@@ -436,7 +373,7 @@ function PrayerCard({
                   ) : (
                     <Camera className="h-3.5 w-3.5" />
                   )}
-                  {isUploading ? "Saving" : "Add proof"}
+                  {isUploading ? t("proof.saveShort") : t("proof.add")}
                 </label>
               )}
               <input
@@ -453,14 +390,15 @@ function PrayerCard({
       </div>
       <p className="mt-3 flex items-start gap-1.5 text-[11px] leading-relaxed text-muted-foreground/80">
         <LockKeyhole className="mt-0.5 h-3.5 w-3.5 shrink-0 text-gold/75" />
-        Keep prayer proofs respectful and non-sensitive. They are stored privately on this device.
+        {t("prayers.note")}
       </p>
     </article>
   );
 }
 
 function TasksPage() {
-  const [tasks, setTasks] = useTasks();
+  const { t } = useI18n();
+  const [tasks] = useTasks();
   const [completions, setCompletions] = useCompletions();
   const [evidence, setEvidence] = useEvidence();
   const [prayerEvidence, setPrayerEvidence] = usePrayerEvidence();
@@ -506,7 +444,7 @@ function TasksPage() {
       setTaskCompleted(scope, true);
     } catch (uploadError) {
       setError(
-        uploadError instanceof Error ? uploadError.message : "The proof could not be saved.",
+        uploadError instanceof Error ? t(uploadError.message) : t("err.save"),
       );
     } finally {
       setUploading(null);
@@ -525,7 +463,7 @@ function TasksPage() {
       }
     } catch (uploadError) {
       setError(
-        uploadError instanceof Error ? uploadError.message : "The prayer proof could not be saved.",
+        uploadError instanceof Error ? t(uploadError.message) : t("err.savePrayer"),
       );
     } finally {
       setUploading(null);
@@ -560,14 +498,14 @@ function TasksPage() {
   };
 
   return (
-    <AppShell title="Daily Protocol" subtitle="Make the day count, one proof at a time.">
+    <AppShell title={t("protocol.title")} subtitle={t("protocol.subtitle")}>
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(280px,.65fr)]">
         <section className="surface relative overflow-hidden p-5 sm:p-6">
           <div className="pointer-events-none absolute -right-16 -top-20 h-48 w-48 rounded-full bg-gold/10 blur-3xl" />
           <div className="relative">
             <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.22em] text-gold">
               <Sparkles className="h-3.5 w-3.5" />
-              Today&apos;s standard
+              {t("protocol.eyebrow")}
             </div>
             <div className="mt-5 flex flex-col gap-5 sm:flex-row sm:items-center">
               <div className="relative shrink-0">
@@ -578,24 +516,23 @@ function TasksPage() {
               </div>
               <div className="min-w-0">
                 <p className="font-hero text-2xl leading-tight text-foreground sm:text-3xl">
-                  Build a day you respect.
+                  {t("protocol.headline")}
                 </p>
                 <p className="mt-2 max-w-lg text-sm leading-relaxed text-muted-foreground">
-                  Small promises become identity when you keep them. Complete the protocol, add
-                  private proofs when useful, and let the streak speak for itself.
+                  {t("protocol.body")}
                 </p>
                 <div className="mt-4 flex flex-wrap items-center gap-2 text-xs">
                   <span className="glass-chip inline-flex items-center gap-1.5 px-2.5 py-1.5 text-foreground">
                     <Check className="h-3.5 w-3.5 text-gold" />
-                    {done.length} / {tasks.length} steps
+                    {t("protocol.steps", { done: done.length, total: tasks.length })}
                   </span>
                   <span className="glass-chip inline-flex items-center gap-1.5 px-2.5 py-1.5 text-foreground">
                     <Camera className="h-3.5 w-3.5 text-gold" />
-                    {evidenceCount} proofs
+                    {t("protocol.proofs", { n: evidenceCount })}
                   </span>
                   <span className="glass-chip inline-flex items-center gap-1.5 px-2.5 py-1.5 text-foreground">
                     <Heart className="h-3.5 w-3.5 text-gold" />
-                    {prayerCount} / 5 prayers
+                    {t("protocol.prayers", { n: prayerCount })}
                   </span>
                 </div>
               </div>
@@ -607,10 +544,10 @@ function TasksPage() {
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
-                Discipline streak
+                {t("protocol.streak")}
               </p>
               <p className="font-stats mt-2 text-4xl font-semibold text-gold">{streak}</p>
-              <p className="mt-1 text-xs text-muted-foreground">consecutive days at 80%+</p>
+              <p className="mt-1 text-xs text-muted-foreground">{t("protocol.streakHint")}</p>
             </div>
             <div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-gold/25 bg-gold/10 text-gold">
               <Flame className="h-5 w-5" />
@@ -619,10 +556,10 @@ function TasksPage() {
           <div className="rounded-xl border border-white/[0.08] bg-white/[0.025] p-3.5">
             <p className="flex items-center gap-2 text-xs font-medium text-foreground">
               <ShieldCheck className="h-4 w-4 text-gold" />
-              Proof locker
+              {t("protocol.locker")}
             </p>
             <p className="mt-1.5 text-[11px] leading-relaxed text-muted-foreground">
-              Your images are compressed for this device and never displayed publicly.
+              {t("protocol.lockerBody")}
             </p>
           </div>
         </section>
@@ -641,24 +578,23 @@ function TasksPage() {
       <div className="mt-7 space-y-7">
         {groupedTasks.map(({ group, tasks: list }) => {
           if (!list.length) return null;
-          const meta = GROUP_META[group];
-          const GroupIcon = meta.icon;
+          const GroupIcon = GROUP_ICON[group];
           return (
             <section key={group}>
               <div className="mb-3 flex items-end justify-between gap-3">
                 <div>
                   <p className="text-[10px] uppercase tracking-[0.22em] text-gold/80">
-                    {meta.eyebrow}
+                    {t(`g.${group}.eyebrow`)}
                   </p>
                   <div className="mt-1.5 flex items-center gap-2.5">
                     <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl border border-gold/20 bg-gold/10 text-gold">
                       <GroupIcon className="h-4 w-4" />
                     </span>
-                    <h2 className="font-hero text-xl text-foreground">{meta.label}</h2>
+                    <h2 className="font-hero text-xl text-foreground">{t(`g.${group}.label`)}</h2>
                   </div>
                 </div>
                 <p className="hidden max-w-xs text-right text-[11px] leading-relaxed text-muted-foreground sm:block">
-                  {meta.description}
+                  {t(`g.${group}.desc`)}
                 </p>
               </div>
               <div className="space-y-2.5">
@@ -697,16 +633,15 @@ function TasksPage() {
               <LockKeyhole className="h-4 w-4" />
             </div>
             <div>
-              <p className="text-sm font-semibold">A private standard, not a public performance.</p>
+              <p className="text-sm font-semibold">{t("protocol.privacyTitle")}</p>
               <p className="mt-1 max-w-xl text-xs leading-relaxed text-muted-foreground">
-                Only upload proof that feels safe. Never include private messages, account details,
-                or another person without permission.
+                {t("protocol.privacyBody")}
               </p>
             </div>
           </div>
           <div className="inline-flex items-center gap-1.5 text-xs text-gold">
             <ArrowUpRight className="h-4 w-4" />
-            Keep showing up
+            {t("protocol.keepGoing")}
           </div>
         </div>
       </div>
