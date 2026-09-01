@@ -108,12 +108,10 @@
   html {
     -webkit-font-smoothing: antialiased;
     color-scheme: dark;
-    direction: ltr !important;
   }
 
   body {
     min-width: 320px;
-    direction: ltr !important;
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
