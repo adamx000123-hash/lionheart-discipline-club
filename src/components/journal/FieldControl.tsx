@@ -9,6 +9,7 @@ type Props = {
   field: JournalField;
   value: unknown;
   error?: string | undefined;
+  suggestions?: string[] | undefined;
   onChange: (value: unknown) => void;
   onEdit: () => void;
   onMove: (dir: -1 | 1) => void;
@@ -20,6 +21,7 @@ export function FieldControl({
   field,
   value,
   error,
+  suggestions,
   onChange,
   onEdit,
   onMove,
@@ -72,7 +74,13 @@ export function FieldControl({
         </div>
       </div>
 
-      <Control field={field} value={value} onChange={onChange} describedBy={describedBy} />
+      <Control
+        field={field}
+        value={value}
+        onChange={onChange}
+        describedBy={describedBy}
+        suggestions={suggestions}
+      />
 
       {field.helper && !error && (
         <p id={`${field.id}-help`} className="mt-1.5 text-[11px] text-muted-foreground">
