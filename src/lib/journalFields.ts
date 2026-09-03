@@ -192,7 +192,6 @@ export const DEFAULT_JOURNAL_FIELDS: JournalField[] = [
 ];
 
 const FIELDS_KEY = "legend.journal.fields";
-const DRAFT_KEY = "legend.journal.draft";
 
 function readJson<T>(key: string, fallback: T): T {
   if (typeof window === "undefined") return fallback;
@@ -237,16 +236,24 @@ export function useJournalFields() {
   return useStoredJson<JournalField[]>(FIELDS_KEY, DEFAULT_JOURNAL_FIELDS);
 }
 
-export function useJournalDraft() {
-  return useStoredJson<Record<string, unknown> | null>(DRAFT_KEY, null);
-}
-
-export function clearJournalDraft() {
-  try {
-    window.localStorage.removeItem(DRAFT_KEY);
-  } catch {
-    /* ignore */
-  }
+/** Unique previously-entered string values per field id — powers Google-style suggestions. */
+export function collectSuggestions(
+  entries: { values?: Record<string, unknown> }[],
+  fields: JournalField[],
+): Record<string, string[]> {
+  const out: Record<string, string[]> = {};
+  fields.forEach((f) => {
+    if (f.type !== "text" && f.type !== "number") return;
+    const seen = new Set<string>();
+    entries.forEach((e) => {
+      const v = e.values?.[f.id];
+      if (v == null) return;
+      const s = String(v).trim();
+      if (s && !seen.has(s)) seen.add(s);
+    });
+    out[f.id] = [...seen].slice(0, 12);
+  });
+  return out;
 }
 
 export function emptyValueFor(field: JournalField): unknown {
