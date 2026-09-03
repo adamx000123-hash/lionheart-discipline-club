@@ -33,6 +33,8 @@ export type JournalEntry = {
   result: "win" | "loss" | "breakeven";
   screenshot?: string | undefined;
   notes: string;
+  /** schema-driven values from the custom journal field system */
+  values?: Record<string, unknown>;
 };
 
 export type Completions = Record<string, string[]>; // date -> task ids
