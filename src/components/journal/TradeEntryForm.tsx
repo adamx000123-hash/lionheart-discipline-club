@@ -168,6 +168,7 @@ export function TradeEntryForm({
                     field={f}
                     value={values[f.id]}
                     error={errors[f.id]}
+                    suggestions={suggestions[f.id]}
                     onChange={(v) => setValue(f.id, v)}
                     onEdit={() => setEditor({ mode: "edit", field: f })}
                     onMove={(d) => move(f, d)}
@@ -193,9 +194,6 @@ export function TradeEntryForm({
               className="glass-button glass-button-gold flex-1 rounded-lg py-3 text-sm font-semibold"
             >
               Save Trade
-            </button>
-            <button onClick={saveDraft} className="glass-button rounded-lg px-5 py-3 text-sm">
-              Save as Draft
             </button>
             <button onClick={cancel} className="glass-button rounded-lg px-5 py-3 text-sm">
               Cancel
