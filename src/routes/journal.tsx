@@ -152,12 +152,23 @@ function JournalPage() {
                 <span className="text-xs text-muted-foreground">{e.date}</span>
                 {e.rr && <span className="text-xs text-gold">R:R {e.rr}</span>}
                 <button
+                  onClick={() => {
+                    setEditing(e);
+                    setOpen(true);
+                  }}
+                  aria-label="Edit entry"
+                  className="glass-icon-button ml-auto hover:border-gold/50 hover:bg-gold/10 hover:text-gold"
+                >
+                  <Pencil className="h-4 w-4" />
+                </button>
+                <button
                   onClick={() => setEntries((prev) => prev.filter((x) => x.id !== e.id))}
                   aria-label="Delete entry"
-                  className="glass-icon-button ml-auto hover:border-destructive/50 hover:bg-destructive/10 hover:text-destructive"
+                  className="glass-icon-button hover:border-destructive/50 hover:bg-destructive/10 hover:text-destructive"
                 >
                   <Trash2 className="h-4 w-4" />
                 </button>
+
               </div>
               {e.setup && <p className="mt-2 text-sm">{e.setup}</p>}
               {e.concepts.length > 0 && (
