@@ -101,17 +101,27 @@ function Control({
   value,
   onChange,
   describedBy,
+  suggestions,
 }: {
   field: JournalField;
   value: unknown;
   onChange: (v: unknown) => void;
   describedBy?: string | undefined;
+  suggestions?: string[] | undefined;
 }) {
   const common = {
     id: field.id,
     "aria-describedby": describedBy,
     "aria-required": field.required,
   };
+  const listId = suggestions?.length ? `${field.id}-suggestions` : undefined;
+  const suggestionList = listId ? (
+    <datalist id={listId}>
+      {suggestions!.map((s) => (
+        <option key={s} value={s} />
+      ))}
+    </datalist>
+  ) : null;
 
   switch (field.type) {
     case "textarea":
@@ -127,15 +137,19 @@ function Control({
       );
     case "number":
       return (
-        <input
-          {...common}
-          type="number"
-          step="any"
-          value={String(value ?? "")}
-          placeholder={field.placeholder ?? ""}
-          onChange={(e) => onChange(e.target.value)}
-          className={`${inputCls} font-stats`}
-        />
+        <>
+          <input
+            {...common}
+            type="number"
+            step="any"
+            list={listId}
+            value={String(value ?? "")}
+            placeholder={field.placeholder ?? ""}
+            onChange={(e) => onChange(e.target.value)}
+            className={`${inputCls} font-stats`}
+          />
+          {suggestionList}
+        </>
       );
     case "date":
       return (
@@ -190,14 +204,19 @@ function Control({
       return <ImageDrop field={field} value={String(value ?? "")} onChange={onChange} />;
     default:
       return (
-        <input
-          {...common}
-          type="text"
-          value={String(value ?? "")}
-          placeholder={field.placeholder ?? ""}
-          onChange={(e) => onChange(e.target.value)}
-          className={inputCls}
-        />
+        <>
+          <input
+            {...common}
+            type="text"
+            list={listId}
+            autoComplete="off"
+            value={String(value ?? "")}
+            placeholder={field.placeholder ?? ""}
+            onChange={(e) => onChange(e.target.value)}
+            className={inputCls}
+          />
+          {suggestionList}
+        </>
       );
   }
 }
