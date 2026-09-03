@@ -58,6 +58,9 @@ export function TradeEntryForm({
     return () => window.removeEventListener("beforeunload", handler);
   }, [dirty]);
 
+  const [entries] = useJournal();
+  const suggestions = useMemo(() => collectSuggestions(entries, fields), [entries, fields]);
+
   const grouped = useMemo(
     () => SECTIONS.map((s) => ({ ...s, items: fields.filter((f) => f.section === s.id) })),
     [fields],
@@ -105,16 +108,6 @@ export function TradeEntryForm({
     toast.success("Field deleted");
   };
 
-  const saveDraft = () => {
-    try {
-      window.localStorage.setItem(DRAFT_KEY, JSON.stringify(values));
-      setDirty(false);
-      toast.success("Saved as draft");
-    } catch {
-      toast.error("Could not save draft");
-    }
-  };
-
   const submit = () => {
     const found = validateValues(fields, values);
     setErrors(found);
@@ -124,7 +117,6 @@ export function TradeEntryForm({
       if (first) document.getElementById(first.id)?.scrollIntoView({ block: "center" });
       return;
     }
-    clearJournalDraft();
     setDirty(false);
     onSubmit({ values, fields });
   };
