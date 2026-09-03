@@ -1,17 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { ImagePlus, Plus, Trash2, X } from "lucide-react";
+import { Pencil, Plus, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { AppShell, EmptyState, StatCard } from "@/components/AppShell";
+import { TradeEntryForm, type TradeFormSubmit } from "@/components/journal/TradeEntryForm";
 import {
-  SMC_CONCEPTS,
   journalStats,
-  todayKey,
   useCompletions,
   useJournal,
   useTasks,
   computeStreak,
   type JournalEntry,
 } from "@/lib/store";
+
 
 export const Route = createFileRoute("/journal")({
   head: () => ({
