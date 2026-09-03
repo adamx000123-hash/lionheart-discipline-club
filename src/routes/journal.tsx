@@ -1,17 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { ImagePlus, Plus, Trash2, X } from "lucide-react";
+import { Pencil, Plus, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { AppShell, EmptyState, StatCard } from "@/components/AppShell";
+import { TradeEntryForm, type TradeFormSubmit } from "@/components/journal/TradeEntryForm";
 import {
-  SMC_CONCEPTS,
   journalStats,
-  todayKey,
   useCompletions,
   useJournal,
   useTasks,
   computeStreak,
   type JournalEntry,
 } from "@/lib/store";
+
 
 export const Route = createFileRoute("/journal")({
   head: () => ({
@@ -32,17 +33,13 @@ export const Route = createFileRoute("/journal")({
   component: JournalPage,
 });
 
-const empty = {
-  date: todayKey(),
-  pair: "",
-  setup: "",
-  concepts: [] as string[],
-  entry: "",
-  exit: "",
-  rr: "",
-  result: "win" as JournalEntry["result"],
-  screenshot: undefined as string | undefined,
-  notes: "",
+const asString = (v: unknown) => (v == null ? "" : String(v));
+
+const toResult = (v: unknown): JournalEntry["result"] => {
+  const s = asString(v).toLowerCase();
+  if (s.startsWith("l")) return "loss";
+  if (s.startsWith("b")) return "breakeven";
+  return "win";
 };
 
 function JournalPage() {
@@ -50,8 +47,8 @@ function JournalPage() {
   const [tasks] = useTasks();
   const [completions] = useCompletions();
   const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<JournalEntry | null>(null);
   const [filter, setFilter] = useState<"all" | JournalEntry["result"]>("all");
-  const [form, setForm] = useState(empty);
 
   const stats = useMemo(() => journalStats(entries), [entries]);
   const streak = computeStreak(completions, tasks.length);
@@ -59,22 +56,30 @@ function JournalPage() {
     .filter((e) => filter === "all" || e.result === filter)
     .sort((a, b) => b.date.localeCompare(a.date));
 
-  const save = () => {
-    if (!form.pair.trim()) return;
-    setEntries((prev) => [
-      { ...form, id: crypto.randomUUID(), pair: form.pair.toUpperCase() },
-      ...prev,
-    ]);
-    setForm(empty);
+  const handleSubmit = ({ values }: TradeFormSubmit) => {
+    const base: Omit<JournalEntry, "id"> = {
+      date: asString(values["date"]) || new Date().toISOString().slice(0, 10),
+      pair: asString(values["pair"]).toUpperCase(),
+      setup: asString(values["setup"]) || asString(values["tradeName"]),
+      concepts: [asString(values["bias"])].filter(Boolean),
+      entry: asString(values["entryConfirmation"]),
+      exit: "",
+      rr: asString(values["pnl"]),
+      result: toResult(values["result"]),
+      screenshot: (values["screenshot"] as string | undefined) || undefined,
+      notes: [asString(values["feelings"]), asString(values["notes"])].filter(Boolean).join(" — "),
+      values,
+    };
+    setEntries((prev) =>
+      editing
+        ? prev.map((e) => (e.id === editing.id ? { ...base, id: editing.id } : e))
+        : [{ ...base, id: crypto.randomUUID() }, ...prev],
+    );
+    toast.success(editing ? "Trade updated" : "Trade saved");
+    setEditing(null);
     setOpen(false);
   };
 
-  const onFile = (file?: File) => {
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => setForm((f) => ({ ...f, screenshot: String(reader.result) }));
-    reader.readAsDataURL(file);
-  };
 
   return (
     <AppShell title="Journal" subtitle="Unlogged trades did not happen. Write them down.">
@@ -147,12 +152,23 @@ function JournalPage() {
                 <span className="text-xs text-muted-foreground">{e.date}</span>
                 {e.rr && <span className="text-xs text-gold">R:R {e.rr}</span>}
                 <button
+                  onClick={() => {
+                    setEditing(e);
+                    setOpen(true);
+                  }}
+                  aria-label="Edit entry"
+                  className="glass-icon-button ml-auto hover:border-gold/50 hover:bg-gold/10 hover:text-gold"
+                >
+                  <Pencil className="h-4 w-4" />
+                </button>
+                <button
                   onClick={() => setEntries((prev) => prev.filter((x) => x.id !== e.id))}
                   aria-label="Delete entry"
-                  className="glass-icon-button ml-auto hover:border-destructive/50 hover:bg-destructive/10 hover:text-destructive"
+                  className="glass-icon-button hover:border-destructive/50 hover:bg-destructive/10 hover:text-destructive"
                 >
                   <Trash2 className="h-4 w-4" />
                 </button>
+
               </div>
               {e.setup && <p className="mt-2 text-sm">{e.setup}</p>}
               {e.concepts.length > 0 && (
@@ -189,159 +205,15 @@ function JournalPage() {
       </div>
 
       {open && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-0 backdrop-blur-sm sm:items-center sm:p-6">
-          <div className="surface animate-rise max-h-[92vh] w-full max-w-lg overflow-y-auto p-5">
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="font-display text-lg">New trade entry</h2>
-              <button
-                onClick={() => setOpen(false)}
-                aria-label="Close"
-                className="glass-icon-button"
-              >
-                <X className="h-5 w-5 text-muted-foreground" />
-              </button>
-            </div>
-
-            <div className="grid gap-3">
-              <div className="grid grid-cols-2 gap-3">
-                <Field label="Date">
-                  <input
-                    type="date"
-                    value={form.date}
-                    onChange={(e) => setForm({ ...form, date: e.target.value })}
-                    className={inputCls}
-                  />
-                </Field>
-                <Field label="Pair">
-                  <input
-                    value={form.pair}
-                    onChange={(e) => setForm({ ...form, pair: e.target.value })}
-                    placeholder="EURUSD"
-                    className={inputCls}
-                  />
-                </Field>
-              </div>
-              <Field label="Setup / strategy">
-                <input
-                  value={form.setup}
-                  onChange={(e) => setForm({ ...form, setup: e.target.value })}
-                  placeholder="London sweep into 15m OB"
-                  className={inputCls}
-                />
-              </Field>
-              <Field label="SMC concepts">
-                <div className="flex flex-wrap gap-1.5">
-                  {SMC_CONCEPTS.map((c) => {
-                    const on = form.concepts.includes(c);
-                    return (
-                      <button
-                        key={c}
-                        type="button"
-                        onClick={() =>
-                          setForm((f) => ({
-                            ...f,
-                            concepts: on ? f.concepts.filter((x) => x !== c) : [...f.concepts, c],
-                          }))
-                        }
-                        className={`glass-chip rounded-md px-2.5 py-1 text-[11px] transition-all duration-200 ${
-                          on
-                            ? "border-gold/60 bg-gold/10 text-gold shadow-[0_0_18px_-10px_var(--gold)]"
-                            : "text-muted-foreground hover:border-white/[0.22] hover:bg-white/[0.07]"
-                        }`}
-                      >
-                        {c}
-                      </button>
-                    );
-                  })}
-                </div>
-              </Field>
-              <div className="grid grid-cols-3 gap-3">
-                <Field label="Entry">
-                  <input
-                    value={form.entry}
-                    onChange={(e) => setForm({ ...form, entry: e.target.value })}
-                    className={inputCls}
-                  />
-                </Field>
-                <Field label="Exit">
-                  <input
-                    value={form.exit}
-                    onChange={(e) => setForm({ ...form, exit: e.target.value })}
-                    className={inputCls}
-                  />
-                </Field>
-                <Field label="R:R">
-                  <input
-                    value={form.rr}
-                    onChange={(e) => setForm({ ...form, rr: e.target.value })}
-                    placeholder="2.5"
-                    className={inputCls}
-                  />
-                </Field>
-              </div>
-              <Field label="Result">
-                <div className="flex gap-2">
-                  {(["win", "loss", "breakeven"] as const).map((r) => (
-                    <button
-                      key={r}
-                      type="button"
-                      onClick={() => setForm({ ...form, result: r })}
-                      className={`glass-control flex-1 px-3 py-2 text-xs capitalize transition-all duration-200 ${
-                        form.result === r
-                          ? "border-gold/60 bg-gold/10 text-gold shadow-[0_0_18px_-10px_var(--gold)]"
-                          : "text-muted-foreground hover:border-white/[0.22] hover:bg-white/[0.07]"
-                      }`}
-                    >
-                      {r}
-                    </button>
-                  ))}
-                </div>
-              </Field>
-              <Field label="Chart screenshot">
-                <label className="glass-control flex cursor-pointer items-center gap-2 border-dashed px-3 py-3 text-xs text-muted-foreground hover:border-gold/50 hover:bg-gold/[0.06]">
-                  <ImagePlus className="h-4 w-4" />
-                  {form.screenshot ? "Screenshot attached — replace" : "Upload chart screenshot"}
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) => onFile(e.target.files?.[0])}
-                  />
-                </label>
-              </Field>
-              <Field label="Emotion & discipline notes">
-                <textarea
-                  value={form.notes}
-                  onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                  rows={3}
-                  placeholder="Did you follow the plan? What did you feel before the entry?"
-                  className={inputCls}
-                />
-              </Field>
-              <button
-                onClick={save}
-                className="glass-button glass-button-gold mt-1 w-full rounded-lg py-3 text-sm font-semibold"
-              >
-                Save entry
-              </button>
-            </div>
-          </div>
-        </div>
+        <TradeEntryForm
+          editing={editing}
+          onClose={() => {
+            setEditing(null);
+            setOpen(false);
+          }}
+          onSubmit={handleSubmit}
+        />
       )}
     </AppShell>
-  );
-}
-
-const inputCls =
-  "glass-control w-full px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground";
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <label className="block">
-      <span className="mb-1.5 block text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
-        {label}
-      </span>
-      {children}
-    </label>
   );
 }
