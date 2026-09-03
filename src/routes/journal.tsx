@@ -33,17 +33,13 @@ export const Route = createFileRoute("/journal")({
   component: JournalPage,
 });
 
-const empty = {
-  date: todayKey(),
-  pair: "",
-  setup: "",
-  concepts: [] as string[],
-  entry: "",
-  exit: "",
-  rr: "",
-  result: "win" as JournalEntry["result"],
-  screenshot: undefined as string | undefined,
-  notes: "",
+const asString = (v: unknown) => (v == null ? "" : String(v));
+
+const toResult = (v: unknown): JournalEntry["result"] => {
+  const s = asString(v).toLowerCase();
+  if (s.startsWith("l")) return "loss";
+  if (s.startsWith("b")) return "breakeven";
+  return "win";
 };
 
 function JournalPage() {
@@ -51,8 +47,8 @@ function JournalPage() {
   const [tasks] = useTasks();
   const [completions] = useCompletions();
   const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<JournalEntry | null>(null);
   const [filter, setFilter] = useState<"all" | JournalEntry["result"]>("all");
-  const [form, setForm] = useState(empty);
 
   const stats = useMemo(() => journalStats(entries), [entries]);
   const streak = computeStreak(completions, tasks.length);
@@ -60,22 +56,30 @@ function JournalPage() {
     .filter((e) => filter === "all" || e.result === filter)
     .sort((a, b) => b.date.localeCompare(a.date));
 
-  const save = () => {
-    if (!form.pair.trim()) return;
-    setEntries((prev) => [
-      { ...form, id: crypto.randomUUID(), pair: form.pair.toUpperCase() },
-      ...prev,
-    ]);
-    setForm(empty);
+  const handleSubmit = ({ values }: TradeFormSubmit) => {
+    const base: Omit<JournalEntry, "id"> = {
+      date: asString(values["date"]) || new Date().toISOString().slice(0, 10),
+      pair: asString(values["pair"]).toUpperCase(),
+      setup: asString(values["setup"]) || asString(values["tradeName"]),
+      concepts: [asString(values["bias"])].filter(Boolean),
+      entry: asString(values["entryConfirmation"]),
+      exit: "",
+      rr: asString(values["pnl"]),
+      result: toResult(values["result"]),
+      screenshot: (values["screenshot"] as string | undefined) || undefined,
+      notes: [asString(values["feelings"]), asString(values["notes"])].filter(Boolean).join(" — "),
+      values,
+    };
+    setEntries((prev) =>
+      editing
+        ? prev.map((e) => (e.id === editing.id ? { ...base, id: editing.id } : e))
+        : [{ ...base, id: crypto.randomUUID() }, ...prev],
+    );
+    toast.success(editing ? "Trade updated" : "Trade saved");
+    setEditing(null);
     setOpen(false);
   };
 
-  const onFile = (file?: File) => {
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => setForm((f) => ({ ...f, screenshot: String(reader.result) }));
-    reader.readAsDataURL(file);
-  };
 
   return (
     <AppShell title="Journal" subtitle="Unlogged trades did not happen. Write them down.">
