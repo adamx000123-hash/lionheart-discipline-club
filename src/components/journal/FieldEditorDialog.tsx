@@ -39,15 +39,15 @@ export function FieldEditorDialog({ field, mode, onClose, onSave, onDelete }: Pr
 
   const save = () => {
     if (!draft.name.trim()) return;
-    onSave({
+    const next: JournalField = {
       ...draft,
       id: draft.id || slugId(draft.name),
       question: draft.question.trim() || draft.name.trim(),
-      options:
-        draft.type === "select"
-          ? (draft.options ?? []).map((o) => o.trim()).filter(Boolean)
-          : draft.options,
-    });
+    };
+    if (draft.type === "select") {
+      next.options = (draft.options ?? []).map((o) => o.trim()).filter(Boolean);
+    }
+    onSave(next);
   };
 
   return (
