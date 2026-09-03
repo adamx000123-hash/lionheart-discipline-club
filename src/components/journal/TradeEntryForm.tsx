@@ -3,7 +3,7 @@ import { Plus, X } from "lucide-react";
 import { toast } from "sonner";
 import {
   SECTIONS,
-  clearJournalDraft,
+  collectSuggestions,
   initialValues,
   useJournalFields,
   validateValues,
@@ -11,9 +11,7 @@ import {
 } from "@/lib/journalFields";
 import { FieldControl } from "./FieldControl";
 import { FieldEditorDialog } from "./FieldEditorDialog";
-import type { JournalEntry } from "@/lib/store";
-
-const DRAFT_KEY = "legend.journal.draft";
+import { useJournal, type JournalEntry } from "@/lib/store";
 
 export type TradeFormSubmit = {
   values: Record<string, unknown>;
@@ -44,15 +42,7 @@ export function TradeEntryForm({
     if (editing) {
       setValues({ ...base, ...(editing.values ?? {}) });
     } else {
-      let draft: Record<string, unknown> | null = null;
-      try {
-        const raw = window.localStorage.getItem(DRAFT_KEY);
-        draft = raw ? JSON.parse(raw) : null;
-      } catch {
-        draft = null;
-      }
-      setValues({ ...base, ...(draft ?? {}) });
-      if (draft) toast.info("Draft restored");
+      setValues(base);
     }
     setReady(true);
   }, [fields, editing, ready]);
