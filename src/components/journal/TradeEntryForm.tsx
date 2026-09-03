@@ -3,7 +3,7 @@ import { Plus, X } from "lucide-react";
 import { toast } from "sonner";
 import {
   SECTIONS,
-  clearJournalDraft,
+  collectSuggestions,
   initialValues,
   useJournalFields,
   validateValues,
@@ -11,9 +11,7 @@ import {
 } from "@/lib/journalFields";
 import { FieldControl } from "./FieldControl";
 import { FieldEditorDialog } from "./FieldEditorDialog";
-import type { JournalEntry } from "@/lib/store";
-
-const DRAFT_KEY = "legend.journal.draft";
+import { useJournal, type JournalEntry } from "@/lib/store";
 
 export type TradeFormSubmit = {
   values: Record<string, unknown>;
@@ -44,15 +42,7 @@ export function TradeEntryForm({
     if (editing) {
       setValues({ ...base, ...(editing.values ?? {}) });
     } else {
-      let draft: Record<string, unknown> | null = null;
-      try {
-        const raw = window.localStorage.getItem(DRAFT_KEY);
-        draft = raw ? JSON.parse(raw) : null;
-      } catch {
-        draft = null;
-      }
-      setValues({ ...base, ...(draft ?? {}) });
-      if (draft) toast.info("Draft restored");
+      setValues(base);
     }
     setReady(true);
   }, [fields, editing, ready]);
@@ -67,6 +57,9 @@ export function TradeEntryForm({
     window.addEventListener("beforeunload", handler);
     return () => window.removeEventListener("beforeunload", handler);
   }, [dirty]);
+
+  const [entries] = useJournal();
+  const suggestions = useMemo(() => collectSuggestions(entries, fields), [entries, fields]);
 
   const grouped = useMemo(
     () => SECTIONS.map((s) => ({ ...s, items: fields.filter((f) => f.section === s.id) })),
@@ -115,16 +108,6 @@ export function TradeEntryForm({
     toast.success("Field deleted");
   };
 
-  const saveDraft = () => {
-    try {
-      window.localStorage.setItem(DRAFT_KEY, JSON.stringify(values));
-      setDirty(false);
-      toast.success("Saved as draft");
-    } catch {
-      toast.error("Could not save draft");
-    }
-  };
-
   const submit = () => {
     const found = validateValues(fields, values);
     setErrors(found);
@@ -134,7 +117,6 @@ export function TradeEntryForm({
       if (first) document.getElementById(first.id)?.scrollIntoView({ block: "center" });
       return;
     }
-    clearJournalDraft();
     setDirty(false);
     onSubmit({ values, fields });
   };
@@ -186,6 +168,7 @@ export function TradeEntryForm({
                     field={f}
                     value={values[f.id]}
                     error={errors[f.id]}
+                    suggestions={suggestions[f.id]}
                     onChange={(v) => setValue(f.id, v)}
                     onEdit={() => setEditor({ mode: "edit", field: f })}
                     onMove={(d) => move(f, d)}
@@ -211,9 +194,6 @@ export function TradeEntryForm({
               className="glass-button glass-button-gold flex-1 rounded-lg py-3 text-sm font-semibold"
             >
               Save Trade
-            </button>
-            <button onClick={saveDraft} className="glass-button rounded-lg px-5 py-3 text-sm">
-              Save as Draft
             </button>
             <button onClick={cancel} className="glass-button rounded-lg px-5 py-3 text-sm">
               Cancel
