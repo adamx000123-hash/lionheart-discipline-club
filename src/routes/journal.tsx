@@ -12,6 +12,7 @@ import {
   computeStreak,
   type JournalEntry,
 } from "@/lib/store";
+import { useI18n } from "@/lib/i18n";
 
 
 export const Route = createFileRoute("/journal")({
@@ -43,6 +44,7 @@ const toResult = (v: unknown): JournalEntry["result"] => {
 };
 
 function JournalPage() {
+  const { t } = useI18n();
   const [entries, setEntries] = useJournal();
   const [tasks] = useTasks();
   const [completions] = useCompletions();
@@ -75,23 +77,23 @@ function JournalPage() {
         ? prev.map((e) => (e.id === editing.id ? { ...base, id: editing.id } : e))
         : [{ ...base, id: crypto.randomUUID() }, ...prev],
     );
-    toast.success(editing ? "Trade updated" : "Trade saved");
+    toast.success(editing ? t("journal.tradeUpdated") : t("journal.tradeSaved"));
     setEditing(null);
     setOpen(false);
   };
 
 
   return (
-    <AppShell title="Journal" subtitle="Unlogged trades did not happen. Write them down.">
+    <AppShell title={t("journal.title")} subtitle={t("journal.subtitle")}>
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard
-          label="Win rate"
+          label={t("journal.winRate")}
           value={`${stats.winRate}%`}
-          hint={`${stats.wins}W / ${stats.losses}L`}
+          hint={t("journal.winsLosses", { w: stats.wins, l: stats.losses })}
         />
-        <StatCard label="Total trades" value={stats.total} />
-        <StatCard label="Avg R:R" value={stats.avgRR ? stats.avgRR.toFixed(2) : "—"} />
-        <StatCard label="Streak" value={streak} hint="disciplined days" />
+        <StatCard label={t("journal.totalTrades")} value={stats.total} />
+        <StatCard label={t("journal.avgRR")} value={stats.avgRR ? stats.avgRR.toFixed(2) : "—"} />
+        <StatCard label={t("journal.streak")} value={streak} hint={t("journal.disciplinedDays")} />
       </div>
 
       <div className="mt-6 flex flex-wrap items-center gap-2">
@@ -105,28 +107,28 @@ function JournalPage() {
                 : "text-muted-foreground hover:border-white/[0.22] hover:bg-white/[0.07] hover:text-foreground"
             }`}
           >
-            {f}
+            {t(`filter.${f}`)}
           </button>
         ))}
         <button
           onClick={() => setOpen(true)}
           className="glass-button glass-button-gold ml-auto inline-flex px-5 py-2 text-xs font-semibold"
         >
-          <Plus className="h-4 w-4" /> New entry
+          <Plus className="h-4 w-4" /> {t("journal.new")}
         </button>
       </div>
 
       <div className="mt-5 space-y-3">
         {visible.length === 0 ? (
           <EmptyState
-            title="No trades logged yet"
-            body="Your first entry sets the standard. Log the pair, the SMC reasoning, the result, and how you felt executing it."
+            title={t("journal.empty.title")}
+            body={t("journal.empty.body")}
             action={
               <button
                 onClick={() => setOpen(true)}
                 className="glass-button glass-button-gold mt-2 px-5 py-2.5 text-sm font-semibold"
               >
-                Log first trade
+                {t("journal.empty.cta")}
               </button>
             }
           />
@@ -156,14 +158,14 @@ function JournalPage() {
                     setEditing(e);
                     setOpen(true);
                   }}
-                  aria-label="Edit entry"
+                  aria-label={t("journal.editEntry")}
                   className="glass-icon-button ml-auto hover:border-gold/50 hover:bg-gold/10 hover:text-gold"
                 >
                   <Pencil className="h-4 w-4" />
                 </button>
                 <button
                   onClick={() => setEntries((prev) => prev.filter((x) => x.id !== e.id))}
-                  aria-label="Delete entry"
+                  aria-label={t("journal.deleteEntry")}
                   className="glass-icon-button hover:border-destructive/50 hover:bg-destructive/10 hover:text-destructive"
                 >
                   <Trash2 className="h-4 w-4" />
@@ -185,7 +187,7 @@ function JournalPage() {
               )}
               {(e.entry || e.exit) && (
                 <p className="mt-2 text-xs text-muted-foreground">
-                  Entry {e.entry || "—"} · Exit {e.exit || "—"}
+                  {t("journal.entryExit", { entry: e.entry || "—", exit: e.exit || "—" })}
                 </p>
               )}
               {e.notes && (
@@ -194,7 +196,7 @@ function JournalPage() {
               {e.screenshot && (
                 <img
                   src={e.screenshot}
-                  alt={`${e.pair} chart`}
+                  alt={t("journal.chartAlt", { pair: e.pair })}
                   loading="lazy"
                   className="mt-3 max-h-72 w-full rounded-lg object-cover"
                 />

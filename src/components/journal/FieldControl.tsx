@@ -1,6 +1,7 @@
 import { ChevronDown, ChevronUp, ImagePlus, Pencil, X } from "lucide-react";
 import { useRef, useState } from "react";
 import type { JournalField } from "@/lib/journalFields";
+import { useI18n } from "@/lib/i18n";
 
 export const inputCls =
   "glass-control w-full rounded-lg px-3 py-2.5 text-sm outline-none transition-all duration-200 placeholder:text-muted-foreground focus:border-gold/60 focus:shadow-[0_0_22px_-12px_var(--gold)]";
@@ -28,7 +29,21 @@ export function FieldControl({
   canMoveUp,
   canMoveDown,
 }: Props) {
+  const { t } = useI18n();
+  const translatedName = field.builtin ? t(`jf.${field.id}.name`) : field.name;
+  const translatedQuestion = field.builtin ? t(`jf.${field.id}.question`) : field.question;
+  const translatedPlaceholder = field.builtin ? t(`jf.${field.id}.placeholder`) : field.placeholder;
+  const translatedHelper = field.builtin ? t(`jf.${field.id}.helper`) : field.helper;
   const describedBy = error ? `${field.id}-error` : field.helper ? `${field.id}-help` : undefined;
+  const displayError = error ? t("journal.required", { name: translatedName }) : undefined;
+  const displayField = {
+    ...field,
+    name: translatedName,
+    question: translatedQuestion,
+    ...(translatedPlaceholder && !translatedPlaceholder.startsWith("jf.")
+      ? { placeholder: translatedPlaceholder }
+      : {}),
+  };
 
   return (
     <div className={field.wide ? "sm:col-span-2" : ""}>
@@ -37,7 +52,7 @@ export function FieldControl({
           htmlFor={field.id}
           className="block text-[11px] uppercase tracking-[0.18em] text-muted-foreground"
         >
-          {field.question}
+          {translatedQuestion}
           {field.required && (
             <span className="ms-1 text-gold" aria-hidden="true">
               *
@@ -49,7 +64,7 @@ export function FieldControl({
             type="button"
             onClick={() => onMove(-1)}
             disabled={!canMoveUp}
-            aria-label={`Move ${field.name} up`}
+            aria-label={t("jf.moveUp", { name: translatedName })}
             className="glass-icon-button h-6 w-6 disabled:opacity-25"
           >
             <ChevronUp className="h-3.5 w-3.5" />
@@ -58,7 +73,7 @@ export function FieldControl({
             type="button"
             onClick={() => onMove(1)}
             disabled={!canMoveDown}
-            aria-label={`Move ${field.name} down`}
+            aria-label={t("jf.moveDown", { name: translatedName })}
             className="glass-icon-button h-6 w-6 disabled:opacity-25"
           >
             <ChevronDown className="h-3.5 w-3.5" />
@@ -66,7 +81,7 @@ export function FieldControl({
           <button
             type="button"
             onClick={onEdit}
-            aria-label={`Edit field ${field.name}`}
+            aria-label={t("jf.edit", { name: translatedName })}
             className="glass-icon-button h-6 w-6 hover:border-gold/50 hover:text-gold"
           >
             <Pencil className="h-3.5 w-3.5" />
@@ -75,7 +90,7 @@ export function FieldControl({
       </div>
 
       <Control
-        field={field}
+        field={displayField}
         value={value}
         onChange={onChange}
         describedBy={describedBy}
@@ -84,12 +99,12 @@ export function FieldControl({
 
       {field.helper && !error && (
         <p id={`${field.id}-help`} className="mt-1.5 text-[11px] text-muted-foreground">
-          {field.helper}
+          {translatedHelper.startsWith("jf.") ? field.helper : translatedHelper}
         </p>
       )}
       {error && (
         <p id={`${field.id}-error`} role="alert" className="mt-1.5 text-[11px] text-destructive">
-          {error}
+          {displayError}
         </p>
       )}
     </div>
@@ -109,6 +124,7 @@ function Control({
   describedBy?: string | undefined;
   suggestions?: string[] | undefined;
 }) {
+  const { t } = useI18n();
   const common = {
     id: field.id,
     "aria-describedby": describedBy,
@@ -117,7 +133,7 @@ function Control({
   const listId = suggestions?.length ? `${field.id}-suggestions` : undefined;
   const suggestionList = listId ? (
     <datalist id={listId}>
-      {suggestions!.map((s) => (
+      {suggestions?.map((s) => (
         <option key={s} value={s} />
       ))}
     </datalist>
@@ -179,7 +195,7 @@ function Control({
                     : "text-muted-foreground hover:border-white/[0.22] hover:bg-white/[0.07]"
                 }`}
               >
-                {opt}
+                 {field.builtin ? t(`jf.option.${opt}`) : opt}
               </button>
             );
           })}
@@ -230,6 +246,7 @@ function Rating({
   value: number;
   onChange: (v: number) => void;
 }) {
+  const { t } = useI18n();
   return (
     <div>
       <div className="flex flex-wrap gap-1.5">
@@ -237,7 +254,7 @@ function Rating({
           <button
             key={n}
             type="button"
-            aria-label={`Review ${n} of 10`}
+            aria-label={t("jf.reviewValue", { value: n })}
             aria-pressed={value === n}
             onClick={() => onChange(n)}
             className={`font-stats h-8 w-8 rounded-lg border text-xs transition-all duration-200 ${
@@ -258,9 +275,9 @@ function Rating({
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
         className="mt-3 w-full accent-[var(--gold)]"
-        aria-label="Review score"
+        aria-label={t("jf.review.name")}
       />
-      <p className="font-stats mt-1 text-xs text-gold">Review: {value}/10</p>
+      <p className="font-stats mt-1 text-xs text-gold">{t("jf.reviewValue", { value })}</p>
     </div>
   );
 }
@@ -274,6 +291,7 @@ function ImageDrop({
   value: string;
   onChange: (v: string) => void;
 }) {
+  const { t } = useI18n();
   const [over, setOver] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -287,11 +305,11 @@ function ImageDrop({
   if (value) {
     return (
       <div className="relative overflow-hidden rounded-xl border border-white/[0.12]">
-        <img src={value} alt="Trade screenshot preview" className="max-h-64 w-full object-cover" />
+        <img src={value} alt={t("jf.imagePreview")} className="max-h-64 w-full object-cover" />
         <button
           type="button"
           onClick={() => onChange("")}
-          aria-label="Remove screenshot"
+          aria-label={t("jf.removeImage")}
           className="glass-icon-button absolute end-2 top-2 hover:border-destructive/50 hover:bg-destructive/20 hover:text-destructive"
         >
           <X className="h-4 w-4" />
@@ -329,8 +347,8 @@ function ImageDrop({
       }`}
     >
       <ImagePlus className="h-6 w-6" />
-      <span className="text-sm text-foreground">Drag & drop your chart here</span>
-      <span>or click to browse — PNG, JPG, WEBP</span>
+      <span className="text-sm text-foreground">{t("jf.dragImage")}</span>
+      <span>{t("jf.browseImage")}</span>
       <input
         ref={inputRef}
         id={field.id}
