@@ -9,6 +9,7 @@ import {
   type JournalField,
 } from "@/lib/journalFields";
 import { inputCls } from "./FieldControl";
+import { useI18n } from "@/lib/i18n";
 
 type Props = {
   field: JournalField | null;
@@ -19,6 +20,7 @@ type Props = {
 };
 
 export function FieldEditorDialog({ field, mode, onClose, onSave, onDelete }: Props) {
+  const { t } = useI18n();
   const [draft, setDraft] = useState<JournalField>(
     field ?? {
       id: "",
@@ -55,21 +57,21 @@ export function FieldEditorDialog({ field, mode, onClose, onSave, onDelete }: Pr
       className="fixed inset-0 z-[60] flex items-end justify-center bg-black/75 p-0 backdrop-blur-sm sm:items-center sm:p-6"
       role="dialog"
       aria-modal="true"
-      aria-label={mode === "create" ? "Add custom field" : `Edit field ${draft.name}`}
+      aria-label={mode === "create" ? t("jf.editor.add") : t("jf.edit", { name: draft.name })}
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div className="surface animate-rise max-h-[92vh] w-full max-w-md overflow-y-auto rounded-t-2xl p-5 sm:rounded-2xl">
         <div className="mb-4 flex items-center justify-between">
           <h3 className="font-display text-base">
-            {mode === "create" ? "Add custom field" : "Edit field"}
+            {mode === "create" ? t("jf.editor.add") : t("jf.editor.edit")}
           </h3>
-          <button onClick={onClose} aria-label="Close" className="glass-icon-button">
+          <button onClick={onClose} aria-label={t("journal.close")} className="glass-icon-button">
             <X className="h-4 w-4" />
           </button>
         </div>
 
         <div className="grid gap-3">
-          <Row label="Field name">
+          <Row label={t("jf.editor.name")}>
             <input
               value={draft.name}
               onChange={(e) => setDraft({ ...draft, name: e.target.value })}
@@ -77,7 +79,7 @@ export function FieldEditorDialog({ field, mode, onClose, onSave, onDelete }: Pr
               placeholder="Risk %"
             />
           </Row>
-          <Row label="Question shown to you">
+          <Row label={t("jf.editor.question")}>
             <input
               value={draft.question}
               onChange={(e) => setDraft({ ...draft, question: e.target.value })}
@@ -86,7 +88,7 @@ export function FieldEditorDialog({ field, mode, onClose, onSave, onDelete }: Pr
             />
           </Row>
           <div className="grid grid-cols-2 gap-3">
-            <Row label="Field type">
+            <Row label={t("jf.editor.type")}>
               <select
                 value={draft.type}
                 disabled={draft.builtin}
@@ -95,12 +97,12 @@ export function FieldEditorDialog({ field, mode, onClose, onSave, onDelete }: Pr
               >
                 {FIELD_TYPES.map((t) => (
                   <option key={t.value} value={t.value} className="bg-background">
-                    {t.label}
+                    {t(`jf.type.${t.value}`)}
                   </option>
                 ))}
               </select>
             </Row>
-            <Row label="Section">
+            <Row label={t("jf.editor.section")}>
               <select
                 value={draft.section}
                 onChange={(e) => setDraft({ ...draft, section: e.target.value as FieldSection })}
@@ -108,14 +110,14 @@ export function FieldEditorDialog({ field, mode, onClose, onSave, onDelete }: Pr
               >
                 {SECTIONS.map((s) => (
                   <option key={s.id} value={s.id} className="bg-background">
-                    {s.title}
+                    {t(s.titleKey)}
                   </option>
                 ))}
               </select>
             </Row>
           </div>
           {draft.type === "select" && (
-            <Row label="Dropdown options (comma separated)">
+            <Row label={t("jf.editor.options")}>
               <input
                 value={(draft.options ?? []).join(", ")}
                 onChange={(e) => setDraft({ ...draft, options: e.target.value.split(",") })}
@@ -124,14 +126,14 @@ export function FieldEditorDialog({ field, mode, onClose, onSave, onDelete }: Pr
               />
             </Row>
           )}
-          <Row label="Placeholder">
+          <Row label={t("jf.editor.placeholder")}>
             <input
               value={draft.placeholder ?? ""}
               onChange={(e) => setDraft({ ...draft, placeholder: e.target.value })}
               className={inputCls}
             />
           </Row>
-          <Row label="Helper text">
+          <Row label={t("jf.editor.helper")}>
             <input
               value={draft.helper ?? ""}
               onChange={(e) => setDraft({ ...draft, helper: e.target.value })}
@@ -145,7 +147,7 @@ export function FieldEditorDialog({ field, mode, onClose, onSave, onDelete }: Pr
               onChange={(e) => setDraft({ ...draft, required: e.target.checked })}
               className="h-4 w-4 accent-[var(--gold)]"
             />
-            <span className="text-muted-foreground">Required field</span>
+            <span className="text-muted-foreground">{t("jf.editor.required")}</span>
           </label>
 
           <div className="mt-1 flex items-center gap-2">
@@ -153,15 +155,15 @@ export function FieldEditorDialog({ field, mode, onClose, onSave, onDelete }: Pr
               onClick={save}
               className="glass-button glass-button-gold flex-1 rounded-lg py-2.5 text-sm font-semibold"
             >
-              Save field
+              {t("jf.editor.save")}
             </button>
             <button onClick={onClose} className="glass-button rounded-lg px-4 py-2.5 text-sm">
-              Cancel
+              {t("journal.cancel")}
             </button>
             {mode === "edit" && onDelete && (
               <button
                 onClick={() => setConfirmDelete(true)}
-                aria-label="Delete field"
+                aria-label={t("jf.editor.delete")}
                 className="glass-icon-button hover:border-destructive/50 hover:bg-destructive/10 hover:text-destructive"
               >
                 <Trash2 className="h-4 w-4" />
@@ -172,20 +174,20 @@ export function FieldEditorDialog({ field, mode, onClose, onSave, onDelete }: Pr
           {confirmDelete && onDelete && (
             <div className="glass-control rounded-lg border-destructive/40 p-3 text-xs">
               <p className="text-muted-foreground">
-                Delete “{draft.name}”? Existing entries keep their saved data.
+                {t("jf.editor.confirm", { name: draft.name })}
               </p>
               <div className="mt-2 flex gap-2">
                 <button
                   onClick={() => onDelete(draft.id)}
                   className="glass-button rounded-md px-3 py-1.5 text-xs text-destructive"
                 >
-                  Yes, delete
+                  {t("jf.editor.yesDelete")}
                 </button>
                 <button
                   onClick={() => setConfirmDelete(false)}
                   className="glass-button rounded-md px-3 py-1.5 text-xs"
                 >
-                  Keep it
+                  {t("jf.editor.keep")}
                 </button>
               </div>
             </div>

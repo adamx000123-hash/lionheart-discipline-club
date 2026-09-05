@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { todayKey, type JournalEntry } from "@/lib/store";
+import { useI18n } from "@/lib/i18n";
 
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
@@ -20,6 +21,7 @@ function dayNet(entries: JournalEntry[]) {
 }
 
 export function TradeCalendar({ entries }: { entries: JournalEntry[] }) {
+  const { t, lang } = useI18n();
   const [cursor, setCursor] = useState(() => {
     const d = new Date();
     return new Date(d.getFullYear(), d.getMonth(), 1);
@@ -53,22 +55,22 @@ export function TradeCalendar({ entries }: { entries: JournalEntry[] }) {
     <section className="surface mt-4 p-5">
       <header className="mb-4 flex items-center justify-between">
         <h2 className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
-          Trading calendar
+          {t("cal.title")}
         </h2>
         <div className="flex items-center gap-2">
           <button
             onClick={() => shift(-1)}
-            aria-label="Previous month"
+            aria-label={t("cal.prev")}
             className="glass-icon-button p-1.5"
           >
             <ChevronLeft className="h-4 w-4" />
           </button>
           <span className="font-stats min-w-[9.5rem] text-center text-sm">
-            {cursor.toLocaleString("en-US", { month: "long" })} {cursor.getFullYear()}
+            {cursor.toLocaleString(lang === "ar" ? "ar-MA" : "en-US", { month: "long" })} {cursor.getFullYear()}
           </span>
           <button
             onClick={() => shift(1)}
-            aria-label="Next month"
+            aria-label={t("cal.next")}
             className="glass-icon-button p-1.5"
           >
             <ChevronRight className="h-4 w-4" />
@@ -82,7 +84,7 @@ export function TradeCalendar({ entries }: { entries: JournalEntry[] }) {
             key={w}
             className="pb-1 text-center text-[10px] uppercase tracking-[0.18em] text-muted-foreground"
           >
-            {w}
+            {t(`wd.${WEEKDAYS.indexOf(w)}`)}
           </div>
         ))}
         {cells.map((d) => {
@@ -127,24 +129,24 @@ export function TradeCalendar({ entries }: { entries: JournalEntry[] }) {
                 <h3 className="font-display text-lg">{selected}</h3>
                 {dayEntries.length > 0 && (
                   <p className="font-stats mt-0.5 text-xs text-muted-foreground">
-                    {dayEntries.length} trades ·{" "}
+                     {t("cal.tradesCount", { n: dayEntries.length })} ·{" "}
                     {Math.round(
                       (dayEntries.filter((e) => e.result === "win").length /
                         Math.max(1, dayEntries.filter((e) => e.result !== "breakeven").length)) *
                         100,
                     )}
-                    % win rate · net{" "}
+                     {t("cal.winRateSuffix")} · {t("cal.net")}{" "}
                     {dayNet(dayEntries) === "win"
-                      ? "profitable"
+                       ? t("cal.net.win")
                       : dayNet(dayEntries) === "loss"
-                        ? "losing"
-                        : "breakeven"}
+                         ? t("cal.net.loss")
+                         : t("cal.net.flat")}
                   </p>
                 )}
               </div>
               <button
                 onClick={() => setSelected(null)}
-                aria-label="Close"
+                aria-label={t("journal.close")}
                 className="glass-icon-button"
               >
                 <X className="h-5 w-5 text-muted-foreground" />
@@ -153,12 +155,12 @@ export function TradeCalendar({ entries }: { entries: JournalEntry[] }) {
 
             {dayEntries.length === 0 ? (
               <div className="py-6 text-center">
-                <p className="text-sm text-muted-foreground">No trades logged</p>
+                <p className="text-sm text-muted-foreground">{t("cal.noTrades")}</p>
                 <Link
                   to="/journal"
                   className="glass-button glass-button-gold mt-3 inline-flex px-5 py-2.5 text-sm font-semibold"
                 >
-                  Log a trade
+                  {t("cal.logTrade")}
                 </Link>
               </div>
             ) : (
@@ -179,7 +181,7 @@ export function TradeCalendar({ entries }: { entries: JournalEntry[] }) {
                               : "bg-secondary text-muted-foreground"
                         }`}
                       >
-                        {e.result}
+                        {t(`result.${e.result}`)}
                       </span>
                       {e.rr && (
                         <span className="font-stats ml-auto text-xs text-gold">R:R {e.rr}</span>
@@ -200,7 +202,7 @@ export function TradeCalendar({ entries }: { entries: JournalEntry[] }) {
                     )}
                     {(e.entry || e.exit) && (
                       <p className="font-stats mt-2 text-xs text-muted-foreground">
-                        Entry {e.entry || "—"} · Exit {e.exit || "—"}
+                        {t("journal.entryExit", { entry: e.entry || "—", exit: e.exit || "—" })}
                       </p>
                     )}
                     {e.notes && (
@@ -211,7 +213,7 @@ export function TradeCalendar({ entries }: { entries: JournalEntry[] }) {
                     {e.screenshot && (
                       <img
                         src={e.screenshot}
-                        alt={`${e.pair} chart`}
+                         alt={t("journal.chartAlt", { pair: e.pair })}
                         loading="lazy"
                         className="mt-3 max-h-48 w-full rounded-lg object-cover"
                       />

@@ -12,6 +12,7 @@ import {
 import { FieldControl } from "./FieldControl";
 import { FieldEditorDialog } from "./FieldEditorDialog";
 import { useJournal, type JournalEntry } from "@/lib/store";
+import { useI18n } from "@/lib/i18n";
 
 export type TradeFormSubmit = {
   values: Record<string, unknown>;
@@ -27,6 +28,7 @@ export function TradeEntryForm({
   onClose: () => void;
   onSubmit: (payload: TradeFormSubmit) => void;
 }) {
+  const { t } = useI18n();
   const [fields, setFields] = useJournalFields();
   const [values, setValues] = useState<Record<string, unknown>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -99,20 +101,20 @@ export function TradeEntryForm({
     );
     setValues((v) => (field.id in v ? v : { ...v, [field.id]: field.type === "rating" ? 5 : "" }));
     setEditor(null);
-    toast.success("Field saved");
+    toast.success(t("journal.fieldSaved"));
   };
 
   const deleteField = (id: string) => {
     setFields((prev) => prev.filter((f) => f.id !== id));
     setEditor(null);
-    toast.success("Field deleted");
+    toast.success(t("journal.fieldDeleted"));
   };
 
   const submit = () => {
     const found = validateValues(fields, values);
     setErrors(found);
     if (Object.keys(found).length) {
-      toast.error("Please complete the required fields");
+      toast.error(t("journal.completeRequired"));
       const first = fields.find((f) => found[f.id]);
       if (first) document.getElementById(first.id)?.scrollIntoView({ block: "center" });
       return;
@@ -122,7 +124,7 @@ export function TradeEntryForm({
   };
 
   const cancel = () => {
-    if (dirty && !window.confirm("Discard your unsaved changes?")) return;
+    if (dirty && !window.confirm(t("journal.discard"))) return;
     onClose();
   };
 
@@ -131,19 +133,19 @@ export function TradeEntryForm({
       className="fixed inset-0 z-50 flex items-end justify-center bg-black/75 p-0 backdrop-blur-sm sm:items-center sm:p-6"
       role="dialog"
       aria-modal="true"
-      aria-label="New trade entry"
+      aria-label={t("journal.newTrade")}
     >
       <div className="surface animate-rise max-h-[94vh] w-full max-w-3xl overflow-y-auto rounded-t-2xl p-5 sm:rounded-2xl sm:p-7">
         <div className="mb-6 flex items-start gap-3">
           <div>
             <h2 className="font-display text-xl sm:text-2xl">
-              {editing ? "Edit Trade Entry" : "New Trade Entry"}
+              {editing ? t("journal.editTrade") : t("journal.newTrade")}
             </h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Record your trade, analyze your decisions, and improve your performance.
+              {t("journal.formSubtitle")}
             </p>
           </div>
-          <button onClick={cancel} aria-label="Close" className="glass-icon-button ms-auto">
+          <button onClick={cancel} aria-label={t("journal.close")} className="glass-icon-button ms-auto">
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -153,13 +155,13 @@ export function TradeEntryForm({
             <section
               key={section.id}
               className="rounded-2xl border border-white/[0.09] bg-white/[0.02] p-4 shadow-[0_24px_60px_-48px_rgba(0,0,0,0.9)] sm:p-5"
-              aria-label={section.title}
+              aria-label={t(section.titleKey)}
             >
               <header className="mb-4">
                 <h3 className="font-display text-sm uppercase tracking-[0.2em] text-gold">
-                  {section.title}
+                  {t(section.titleKey)}
                 </h3>
-                <p className="mt-1 text-[11px] text-muted-foreground">{section.hint}</p>
+                <p className="mt-1 text-[11px] text-muted-foreground">{t(`${section.titleKey}Hint`)}</p>
               </header>
               <div className="grid gap-4 sm:grid-cols-2">
                 {section.items.map((f, i) => (
@@ -185,7 +187,7 @@ export function TradeEntryForm({
             onClick={() => setEditor({ mode: "create", field: null })}
             className="glass-button flex w-full items-center justify-center gap-2 rounded-xl border-dashed py-3 text-sm font-medium hover:border-gold/50 hover:text-gold"
           >
-            <Plus className="h-4 w-4" /> Add Custom Field
+            <Plus className="h-4 w-4" /> {t("journal.addCustomField")}
           </button>
 
           <div className="sticky bottom-0 -mx-5 mt-2 flex flex-col gap-2 border-t border-white/[0.08] bg-background/85 px-5 py-4 backdrop-blur sm:-mx-7 sm:flex-row sm:px-7">
@@ -193,10 +195,10 @@ export function TradeEntryForm({
               onClick={submit}
               className="glass-button glass-button-gold flex-1 rounded-lg py-3 text-sm font-semibold"
             >
-              Save Trade
+              {t("journal.saveTrade")}
             </button>
             <button onClick={cancel} className="glass-button rounded-lg px-5 py-3 text-sm">
-              Cancel
+              {t("journal.cancel")}
             </button>
           </div>
         </div>
