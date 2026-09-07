@@ -99,7 +99,7 @@ export function FieldControl({
 
       {field.helper && !error && (
         <p id={`${field.id}-help`} className="mt-1.5 text-[11px] text-muted-foreground">
-          {translatedHelper.startsWith("jf.") ? field.helper : translatedHelper}
+          {translatedHelper?.startsWith("jf.") ? field.helper : (translatedHelper ?? field.helper)}
         </p>
       )}
       {error && (
