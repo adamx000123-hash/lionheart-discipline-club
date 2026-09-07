@@ -95,9 +95,9 @@ export function FieldEditorDialog({ field, mode, onClose, onSave, onDelete }: Pr
                 onChange={(e) => setDraft({ ...draft, type: e.target.value as FieldType })}
                 className={`${inputCls} disabled:opacity-50`}
               >
-                {FIELD_TYPES.map((t) => (
-                  <option key={t.value} value={t.value} className="bg-background">
-                    {t(`jf.type.${t.value}`)}
+                {FIELD_TYPES.map((ft) => (
+                  <option key={ft.value} value={ft.value} className="bg-background">
+                    {t(`jf.type.${ft.value}`)}
                   </option>
                 ))}
               </select>
