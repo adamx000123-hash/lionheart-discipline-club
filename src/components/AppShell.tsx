@@ -21,11 +21,9 @@ export function AppShell({
   subtitle?: string;
   children: ReactNode;
 }) {
-  const { t, dir } = useI18n();
+  const { t } = useI18n();
   const activeEdge =
-    dir === "rtl"
-      ? "!border-gold/20 !bg-gold/10 !text-gold shadow-[inset_-3px_0_0_var(--gold)]"
-      : "!border-gold/20 !bg-gold/10 !text-gold shadow-[inset_3px_0_0_var(--gold)]";
+    "!border-gold/20 !bg-gold/10 !text-gold shadow-[inset_3px_0_0_var(--gold)]";
 
   return (
     <div className="relative min-h-screen overflow-hidden hero-vignette">
